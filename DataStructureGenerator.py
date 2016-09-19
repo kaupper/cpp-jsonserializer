@@ -262,12 +262,11 @@ template <typename T> T * deepCopyPointer(T * pointer) {
                     requiredCount += 1
                     
             # constructor for required members
-            if len(struct["fields"]) > 0:
+            if requiredCount > 0:
                 buff = buff + "%s::%s(" % (n, n)
                 first = True
                 for field in struct["fields"]:
                     if field["required"] == "true":
-                        requiredCount += 1
                         if not first:
                             buff = buff + ", " 
                         buff = buff + "%s %s" % (field["type"], field["cppName"])
