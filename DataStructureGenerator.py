@@ -1,10 +1,41 @@
+import sys
 import os
 import json
 import shutil
 
 
-path = os.path.dirname(os.path.abspath(__file__)) + "/"
-filePath = path + "generated/"
+
+jsonFile = ""
+outputDir = "./generated/"
+outputFile = "./generated.h"
+
+for arg in sys.argv:
+    if arg.startswith("--json="):
+        jsonFile = arg[len("--json="):]
+    if arg.startswith("--output="):
+        outputDir = arg[len("--output="):]
+    if arg.startswith("--header="):
+        outputFile = arg[len("--header="):]
+
+if jsonFile == "" or outputDir == "" or outputFile == "":
+    print("Usage: %s --json=<struct_description_file> --output=<output_directory> --header=<common_header>" % (os.path.basename(__file__)))
+    print("\tstruct_description_file: Specifies the file which should be used as template for our structs.")
+    print("\toutput_directory: Specifies the output directory for generated files. Default is ./generated/.")
+    print("\tcommon_header: Specifies the path and the file name for the header file which should be included in your application. Default is ./generated.h.")
+    sys.exit(1)
+    
+print("JSON file: " + jsonFile)
+print("Output directory: " + outputDir)
+print("Header file: " + outputFile)
+
+path = os.path.abspath(os.path.join(os.path.dirname(__file__))) + "/"
+outputPath = os.path.abspath(os.path.join(path, outputDir)) + "/"
+
+print ("Absolute path: " + path)
+print ("Absolute output path: " + outputPath)
+
+outputFile = path + outputFile
+
 
 def upper(s):
     l = list(s)
@@ -12,22 +43,27 @@ def upper(s):
     return ''.join(l)
 
 def generateHeader(file, deps):
-    file = filePath + file
-    prefix = """#ifndef TELEGRAM_BOT_DATA_STRUCTURES_H_
-#define TELEGRAM_BOT_DATA_STRUCTURES_H_
+    prefix = """#ifndef JSON_SERIALIZER_DATA_STRUCTURES_H_
+#define JSON_SERIALIZER_DATA_STRUCTURES_H_
 
 #include <vector>
 #include <string>
 #include <map>
 
-namespace telegram::structures
+"""
+
+    includes = ""
+    for d in deps:
+        includes = includes + "#include \"%s\"\n" % (d) 
+    prefix = prefix + includes
+    prefix = prefix + """
+namespace jsonserializer::structures
 {
 """
    
-    postfix = """
-}
+    postfix = """}
 
-#endif // TELEGRAM_BOT_DATA_STRUCTURES_H_
+#endif // JSON_SERIALIZER_DATA_STRUCTURES_H_
 """
     tab = "    "
     linebreak = "\n"
@@ -111,13 +147,12 @@ namespace telegram::structures
         f.write(postfix)
         
 def generateImplementation(file, deps):
-    file = filePath + file
     includes = ""
     for d  in deps:
         includes = includes + "#include \"%s\"\n" % (d) 
     
     prefix = includes + "\n"
-    prefix = prefix + """using namespace telegram::structures;
+    prefix = prefix + """using namespace jsonserializer::structures;
 
 template <typename T> T * deepCopyPointer(T * pointer) {
     if (pointer == nullptr) {
@@ -274,16 +309,14 @@ template <typename T> T * deepCopyPointer(T * pointer) {
         f.write(postfix)
         
 def generateStructureToJSONConverter(file, deps):
-    file = filePath + file
     includes = ""
     for d  in deps:
         includes = includes + "#include \"%s\"\n" % (d) 
    
-    prefix = includes + "\n" + """namespace telegram::structures
+    prefix = includes + "\n" + """namespace jsonserializer::structures
 {
 """
-    postfix = """
-}
+    postfix = """}
 """
     
     tab = "    "
@@ -314,16 +347,14 @@ def generateStructureToJSONConverter(file, deps):
         f.write(postfix)
         
 def generateStructureFromJSONConverter(file, deps):
-    file = filePath + file
     includes = ""
     for d  in deps:
         includes = includes + "#include \"%s\"\n" % (d) 
     
-    prefix = includes + "\n" + """namespace telegram::structures
+    prefix = includes + "\n" + """namespace jsonserializer::structures
 {
 """
-    postfix = """
-}
+    postfix = """}
 """
     
     tab = "    "
@@ -355,45 +386,40 @@ def generateStructureFromJSONConverter(file, deps):
         
 
 def generateCommonHeader(file, deps):
-    content = """#ifndef GENERATED_SOURCES_H_
-#define GENERATED_SOURCES_H_
+    content = """#ifndef JSON_SERIALIZER_GENERATED_SOURCES_H_
+#define JSON_SERIALIZER_GENERATED_SOURCES_H_
 
 """
     includes = ""
     for d  in deps:
         includes = includes + "#include \"%s\"\n" % (d) 
     content = content + includes
-    content = content + """
-    
-#endif // GENERATED_SOURCES_H_
+    content = content + """    
+#endif // JSON_SERIALIZER_GENERATED_SOURCES_H_
 """
-    with open(path + file, "w") as f:
+    with open(file, "w") as f:
         f.write(content)
 
 
-jsonFile = path + "json/DataStructureDefinitions.json"
-
-converterHeaderFile = "telegram/StructConverter.h"
+        
+converterHeaderFile = "include/StructConverter.h"
 headerFile = "DataStructures.h"
 implFile = "DataStructures.cpp"
-toJSONFile = "StructConverterToJSON.cpp"
-fromJSONFile = "StructConverterFromJSON.cpp"
-toJSONTemplates = "../templates/ToJSONTemplates.cpp"
-fromJSONTemplates = "../templates/FromJSONTemplates.cpp"
-commonHeader = "generated.h"
+toJSONFile = "DataStructureConverterToJSON.cpp"
+fromJSONFile = "DataStructureConverterFromJSON.cpp"
+toJSONTemplates = "templates/ToJSONTemplates.cpp"
+fromJSONTemplates = "templates/FromJSONTemplates.cpp"
 
 
-if os.path.isdir(filePath):
-    shutil.rmtree(filePath)
-    os.makedirs(filePath) 
-if os.path.exists(path + commonHeader):
-    os.remove(path + commonHeader)
+if os.path.isdir(outputPath):
+    shutil.rmtree(outputPath)
+os.makedirs(outputPath)
+if os.path.exists(outputFile):
+    os.remove(outputFile)
 
-generateHeader(headerFile, [converterHeaderFile])
-generateImplementation(implFile, [headerFile])
-generateStructureToJSONConverter(toJSONFile, [headerFile, toJSONTemplates])
-generateStructureFromJSONConverter(fromJSONFile, [headerFile, fromJSONTemplates])
+generateHeader(outputPath + headerFile, [converterHeaderFile])
+generateImplementation(outputPath + implFile, [headerFile])
+generateStructureToJSONConverter(outputPath + toJSONFile, [headerFile, toJSONTemplates])
+generateStructureFromJSONConverter(outputPath + fromJSONFile, [headerFile, fromJSONTemplates])
 
-relativePath = filePath.replace(path, "")
-
-generateCommonHeader(commonHeader, [relativePath + headerFile])
+generateCommonHeader(outputFile, [(outputPath + headerFile).replace(path, "")])
