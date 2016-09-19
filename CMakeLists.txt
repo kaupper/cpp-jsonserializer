@@ -40,13 +40,13 @@ ${PROJECT_SOURCE_DIR}/src/PersistingService.cpp
 
 
 # include jsoncpp
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/modules)
 include("Jsoncpp.cmake")
 
 # build library
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 target_include_directories (${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME} "jsoncpp")
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES OUTPUT_NAME jsonserializer)
 
 # generator will be executed every time the lib is built
 add_custom_target(python_generator 

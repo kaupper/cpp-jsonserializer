@@ -25,11 +25,10 @@ if jsonFile == "" or outputDir == "" or outputFile == "":
     
 outputPath = os.path.abspath(outputDir) + "/"
 
-if not "--list-expected-outputs" in sys.argv:
-    print("JSON file: " + jsonFile)
-    print("Output directory: " + outputDir)
-    print("Header file: " + outputFile)
-    print ("Absolute output path: " + outputPath)
+print("JSON file: " + jsonFile)
+print("Output directory: " + outputDir)
+print("Header file: " + outputFile)
+print("Absolute output path: " + outputPath)
 
 
 
@@ -106,18 +105,23 @@ namespace jsonserializer::structures
 
             requiredCount = 0
             
+            for field in struct["fields"]:
+                if field["required"] == "true":
+                    requiredCount += 1
+            
             # constructor for required members
-            if len(struct["fields"]) > 0:
-                buff = buff + "%s(" % (struct["name"])
+            if requiredCount > 0:
+                tmp = ""
+                tmp = tmp + "%s(" % (struct["name"])
                 first = True
                 for field in struct["fields"]:
                     if field["required"] == "true":
-                        requiredCount += 1
                         if not first:
-                            buff = buff + ", " 
-                        buff = buff + "%s %s" % (field["type"], field["cppName"])
+                            tmp = tmp + ", "
+                        tmp = tmp + "%s %s" % (field["type"], field["cppName"])
                         first = False
-                buff = buff + ");" + linebreak + tab 
+                tmp = tmp + ");" + linebreak + tab 
+                buff = buff + tmp
  
             if requiredCount != len(struct["fields"]):
                 # constructor for all members
@@ -252,6 +256,11 @@ template <typename T> T * deepCopyPointer(T * pointer) {
             buff = buff + "}" + linebreak + linebreak
            
             requiredCount = 0
+            
+            for field in struct["fields"]:
+                if field["required"] == "true":
+                    requiredCount += 1
+                    
             # constructor for required members
             if len(struct["fields"]) > 0:
                 buff = buff + "%s::%s(" % (n, n)
