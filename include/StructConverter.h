@@ -2,7 +2,6 @@
 #define TELEGRAM_BOT_JSON_CONVERTER_H_
 
 #include "Serializable.h"
-#include "generated.h"
 
 namespace jsonserializer::structures
 {
