@@ -1,0 +1,28 @@
+#ifndef SERIALIZABLE_H_
+#define SERIALIZABLE_H_
+
+#include <iostream>
+#include <map>
+#include <string>
+#include <memory>
+
+#include "json/json.h"
+
+#include "utils/Logger.h"
+
+class Serializable : public Json::Value
+{
+public:
+    static std::shared_ptr<Serializable> Deserialize(const std::string& serializedString);
+    
+    Serializable(const Json::Value& json) : Serializable()
+    {
+        Json::Value v(json);
+        this->swap(v);
+    }
+    
+    Serializable() : Json::Value() {}
+    std::string Serialize() const;   
+};
+
+#endif // SERIALIZABLE_H_
