@@ -72,8 +72,8 @@ Structs generated will contain:
 - Another constructor with all required fields (see JSON).
 
 To be able to have optional fields out members must be pointers, therefore it is possible that they are `NULL`/`nullptr`. 
-If you do not want to do checks for `nullptr` yourself you can use the corresponding `Get\<field_name\>()`.
+If you do not want to do checks for `nullptr` yourself you can use the corresponding `Get<field_name>()`.
 `GetTestField11()` will check if the `testField11` is a nullptr. If so it will create a new pointer (stored with the field name in `map`) and returns that default object. Validation of these objects is up to the user.
-`Get\<field_name\>Value()` returns the dereferenced object (may segfault!!).
+`Get<field_name>Value()` returns the dereferenced object (may segfault!!).
 
 To get all files to compile you will have to set the include directories to the root folder of this repository!
