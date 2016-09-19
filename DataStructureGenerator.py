@@ -23,13 +23,12 @@ if jsonFile == "" or outputDir == "" or outputFile == "":
     print("\tcommon_header: Specifies the path and the file name for the header file which should be included in your application. Default is ./generated.h.")
     sys.exit(1)
     
-path = os.path.abspath(os.path.join(os.path.dirname(__file__))) + "/"
-outputPath = os.path.abspath(os.path.join(path, outputDir.replace(path, ""))) + "/"
+outputPath = os.path.abspath(outputDir) + "/"
+
 if not "--list-expected-outputs" in sys.argv:
     print("JSON file: " + jsonFile)
     print("Output directory: " + outputDir)
     print("Header file: " + outputFile)
-    print ("Absolute path: " + path)
     print ("Absolute output path: " + outputPath)
 
 
@@ -46,12 +45,8 @@ headerFile = "DataStructures.h"
 implFile = "DataStructures.cpp"
 toJSONFile = "DataStructureConverterToJSON.cpp"
 fromJSONFile = "DataStructureConverterFromJSON.cpp"
-outputFile = path + outputFile.replace(path, "")
+outputFile = outputFile
 
-if "--list-expected-outputs" in sys.argv:
-    #print("%s;%s;%s" % (outputPath + implFile, outputPath + toJSONFile, outputPath + fromJSONFile))
-    print("%s" % ((outputPath + implFile).replace(path, "")))
-    #sys.exit(0)
 
 def upper(s):
     l = list(s)
@@ -429,4 +424,4 @@ generateImplementation(outputPath + implFile, [headerFile])
 generateStructureToJSONConverter(outputPath + toJSONFile, [headerFile, toJSONTemplates])
 generateStructureFromJSONConverter(outputPath + fromJSONFile, [headerFile, fromJSONTemplates])
 
-generateCommonHeader(outputFile, [(outputPath + headerFile).replace(path, "")])
+generateCommonHeader(outputFile, [(outputPath + headerFile)])

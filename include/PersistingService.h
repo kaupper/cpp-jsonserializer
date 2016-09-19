@@ -6,20 +6,23 @@
 
 #include "Serializable.h"
 
-class PersistingService : public Serializable
+namespace jsonserializer
 {
-public:
-    static PersistingService LoadFromFile(std::string fileName);
-        
-    PersistingService() { }
-    PersistingService(std::string fileName) : PersistingService() { (*this)["fileName"] = fileName; } 
+    class PersistingService : public Serializable
+    {
+    public:
+        static PersistingService LoadFromFile(std::string fileName);
+            
+        PersistingService() { }
+        PersistingService(std::string fileName) : PersistingService() { (*this)["fileName"] = fileName; } 
 
 
-    void Load();
-    void Save();
+        void Load();
+        void Save();
 
-    void SetFileName(std::string fileName) { (*this)["fileName"] = fileName; }
-    std::string GetFileName() { return get("fileName", "").asString(); }
-};
+        void SetFileName(std::string fileName) { (*this)["fileName"] = fileName; }
+        std::string GetFileName() { return get("fileName", "").asString(); }
+    };
+}
 
 #endif // PERSISTING_SERVICE_H_

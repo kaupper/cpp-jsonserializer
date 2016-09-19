@@ -10,19 +10,22 @@
 
 #include "SerializableException.h"
 
-class Serializable : public Json::Value
+namespace jsonserializer
 {
-public:
-    static Serializable Deserialize(const std::string& serializedString);
-    
-    Serializable(const Json::Value& json) : Serializable()
+    class Serializable : public Json::Value
     {
-        Json::Value v(json);
-        this->swap(v);
-    }
-    
-    Serializable() : Json::Value() {}
-    std::string Serialize() const;   
-};
+    public:
+        static Serializable Deserialize(const std::string& serializedString);
+        
+        Serializable(const Json::Value& json) : Serializable()
+        {
+            Json::Value v(json);
+            this->swap(v);
+        }
+        
+        Serializable() : Json::Value() {}
+        std::string Serialize() const;   
+    };
+}
 
 #endif // SERIALIZABLE_H_

@@ -1,5 +1,7 @@
 #include "Serializable.h"
 
+using namespace jsonserializer;
+
 std::string Serializable::Serialize() const
 {
     Json::StyledWriter writer;

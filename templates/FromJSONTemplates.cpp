@@ -1,5 +1,6 @@
 #include "StructConverter.h"
 
+using namespace jsonserializer;
 using namespace jsonserializer::structures;
 
 // convert "primitives"

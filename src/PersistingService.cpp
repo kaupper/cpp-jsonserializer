@@ -1,5 +1,7 @@
 #include "PersistingService.h"
 
+using namespace jsonserializer;
+
 void PersistingService::Load()
 {
     std::string fileName = get("fileName", "").asString();
