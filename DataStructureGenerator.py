@@ -4,10 +4,9 @@ import json
 import shutil
 
 
-
 jsonFile = ""
 outputDir = "./generated/"
-outputFile = "./generated.h"
+outputFile = "include/generated.h"
 
 for arg in sys.argv:
     if arg.startswith("--json="):
@@ -16,7 +15,7 @@ for arg in sys.argv:
         outputDir = arg[len("--output="):]
     if arg.startswith("--header="):
         outputFile = arg[len("--header="):]
-
+        
 if jsonFile == "" or outputDir == "" or outputFile == "":
     print("Usage: %s --json=<struct_description_file> --output=<output_directory> --header=<common_header>" % (os.path.basename(__file__)))
     print("\tstruct_description_file: Specifies the file which should be used as template for our structs.")
@@ -24,18 +23,35 @@ if jsonFile == "" or outputDir == "" or outputFile == "":
     print("\tcommon_header: Specifies the path and the file name for the header file which should be included in your application. Default is ./generated.h.")
     sys.exit(1)
     
-print("JSON file: " + jsonFile)
-print("Output directory: " + outputDir)
-print("Header file: " + outputFile)
-
 path = os.path.abspath(os.path.join(os.path.dirname(__file__))) + "/"
-outputPath = os.path.abspath(os.path.join(path, outputDir)) + "/"
+outputPath = os.path.abspath(os.path.join(path, outputDir.replace(path, ""))) + "/"
+if not "--list-expected-outputs" in sys.argv:
+    print("JSON file: " + jsonFile)
+    print("Output directory: " + outputDir)
+    print("Header file: " + outputFile)
+    print ("Absolute path: " + path)
+    print ("Absolute output path: " + outputPath)
 
-print ("Absolute path: " + path)
-print ("Absolute output path: " + outputPath)
 
-outputFile = path + outputFile
 
+# reference to StructConverter.h       
+converterHeaderFile = "include/StructConverter.h"
+
+# references to serialize templates
+toJSONTemplates = "templates/ToJSONTemplates.cpp"
+fromJSONTemplates = "templates/FromJSONTemplates.cpp"
+
+# generated outputs
+headerFile = "DataStructures.h"
+implFile = "DataStructures.cpp"
+toJSONFile = "DataStructureConverterToJSON.cpp"
+fromJSONFile = "DataStructureConverterFromJSON.cpp"
+outputFile = path + outputFile.replace(path, "")
+
+if "--list-expected-outputs" in sys.argv:
+    #print("%s;%s;%s" % (outputPath + implFile, outputPath + toJSONFile, outputPath + fromJSONFile))
+    print("%s" % ((outputPath + implFile).replace(path, "")))
+    #sys.exit(0)
 
 def upper(s):
     l = list(s)
@@ -400,15 +416,6 @@ def generateCommonHeader(file, deps):
     with open(file, "w") as f:
         f.write(content)
 
-
-        
-converterHeaderFile = "include/StructConverter.h"
-headerFile = "DataStructures.h"
-implFile = "DataStructures.cpp"
-toJSONFile = "DataStructureConverterToJSON.cpp"
-fromJSONFile = "DataStructureConverterFromJSON.cpp"
-toJSONTemplates = "templates/ToJSONTemplates.cpp"
-fromJSONTemplates = "templates/FromJSONTemplates.cpp"
 
 
 if os.path.isdir(outputPath):

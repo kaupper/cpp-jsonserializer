@@ -4,13 +4,12 @@
 #include <iostream>
 #include <fstream>
 
-#include "PersistingException.h"
 #include "Serializable.h"
 
 class PersistingService : public Serializable
 {
 public:
-    static std::shared_ptr<PersistingService> LoadFromFile(std::string fileName);
+    static PersistingService LoadFromFile(std::string fileName);
         
     PersistingService() { }
     PersistingService(std::string fileName) : PersistingService() { (*this)["fileName"] = fileName; } 

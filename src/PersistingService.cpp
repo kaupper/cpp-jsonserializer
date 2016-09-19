@@ -1,6 +1,5 @@
 #include "PersistingService.h"
 
-
 void PersistingService::Load()
 {
     std::string fileName = get("fileName", "").asString();
@@ -26,13 +25,13 @@ void PersistingService::Load()
             std::string json(buffer);
             delete[] buffer;
             file.close();
-            throw PersistingException("Failed to parse JSON: (" + json + ")");
+            throw SerializableException("Failed to parse JSON: (" + json + ")");
         }
         
         delete[] buffer;
         file.close();
     } else {
-        throw PersistingException("Failed to open file: (" + fileName + ")");
+        throw SerializableException("Failed to open file: (" + fileName + ")");
     }
 }
 
@@ -49,13 +48,13 @@ void PersistingService::Save()
         file.write(json.c_str(), (long int) json.size());
         file.close();
     } else {
-        throw PersistingException("Failed to open file: (" + fileName + ")");
+        throw SerializableException("Failed to open file: (" + fileName + ")");
     }
 }
 
-std::shared_ptr<PersistingService> PersistingService::LoadFromFile(std::string fileName)
+PersistingService PersistingService::LoadFromFile(std::string fileName)
 {
-    std::shared_ptr<PersistingService> service = std::make_shared<PersistingService>(fileName);
-    service->Load();
+    PersistingService service (fileName);
+    service.Load();
     return service;
 }

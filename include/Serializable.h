@@ -8,12 +8,12 @@
 
 #include "json/json.h"
 
-#include "utils/Logger.h"
+#include "SerializableException.h"
 
 class Serializable : public Json::Value
 {
 public:
-    static std::shared_ptr<Serializable> Deserialize(const std::string& serializedString);
+    static Serializable Deserialize(const std::string& serializedString);
     
     Serializable(const Json::Value& json) : Serializable()
     {

@@ -1,11 +1,10 @@
 #ifndef TELEGRAM_BOT_JSON_CONVERTER_H_
 #define TELEGRAM_BOT_JSON_CONVERTER_H_
 
-#include "utils/json/Serializable.h"
-#include "telegram/TelegramException.h"
+#include "Serializable.h"
 #include "generated.h"
 
-namespace telegram::structures
+namespace jsonserializer::structures
 {
     
     // check for "primitives"
@@ -19,20 +18,14 @@ namespace telegram::structures
     template <typename T, typename Alloc> struct _isVector<std::vector<T,Alloc> > { static const bool value = true; };
     template <typename T> const bool isVector = _isVector<T>::value;
     
-    // check for telegram data structures
-    template <typename T> const bool isTelegramStructure = !isPrimitive<T> && !isVector<T>;
+    template <typename T> const bool isSomethingElse = !isPrimitive<T> && !isVector<T>;
     
-    template <typename T> const bool isMarkup = std::is_same<T, telegram::structures::InlineKeyboardMarkup>::value ||
-                                                std::is_same<T, telegram::structures::ReplyKeyboardMarkup>::value ||
-                                                std::is_same<T, telegram::structures::ReplyKeyboardHide>::value ||
-                                                std::is_same<T, telegram::structures::ForceReply>::value;
-
     class Converter
     {    
     public:
         // to JSON templates
         template <typename T> 
-        static typename std::enable_if<isTelegramStructure<T>, Serializable>::type ToJSON(const T &obj);
+        static typename std::enable_if<!isVector<T>, Serializable>::type ToJSON(const T &obj);
               
         template<typename T> 
         static typename std::enable_if<isVector<T>, Serializable>::type ToJSON(const T &obj) { 
@@ -44,7 +37,7 @@ namespace telegram::structures
         }
         
         template<typename T> 
-        static typename std::enable_if<isTelegramStructure<T>, Serializable>::type ToJSON(const T *obj) { 
+        static typename std::enable_if<!isVector<T>, Serializable>::type ToJSON(const T *obj) { 
             return ToJSON(*obj); 
         }
         
