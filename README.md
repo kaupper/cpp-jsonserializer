@@ -1,6 +1,6 @@
 Welcome to cpp-jsonserializer!
 
-The content of this repository is dedicated to the automatic creation of (de-)serialiable structs using jsoncpp and cpp.
+The content of this repository is dedicated to the automatic creation of (de-) serializable structs using jsoncpp and cpp.
 
 The generation of the structs itself is done by a python script (generator.py) and has following parameters:
 - `--json=<struct_description_file>`: Specifies the file which should be used as template for our structs. For the structure of such a template file see below.
@@ -75,6 +75,8 @@ To be able to have optional fields out members must be pointers, therefore it is
 If you do not want to do checks for `nullptr` yourself you can use the corresponding `Get<field_name>()`.
 `GetTestField11()` will check if the `testField11` is a nullptr. If so it will create a new pointer (stored with the field name in `map`) and returns that default object. Validation of these objects is up to the user.
 `Get<field_name>Value()` returns the dereferenced object (may segfault!!).
+
+TODO: Show (de-) serialization with `StructConverter.h`
 
 In order to compile this project you will have to set the include directories to the root folder of this repository!
 You will also have to get [jsoncpp](https://github.com/open-source-parsers/jsoncpp)!
