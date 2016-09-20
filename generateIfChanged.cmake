@@ -1,3 +1,4 @@
+
 execute_process(
 COMMAND "stat"
 "-c"
@@ -5,12 +6,16 @@ COMMAND "stat"
 "${GENERATOR}"
 OUTPUT_VARIABLE GENERATOR_DATE)
 
-execute_process(
-COMMAND "stat"
-"-c"
-"%Y"
-"${GENERATED_DIRECTORY}"
-OUTPUT_VARIABLE DIRECTORY_DATE)
+if(NOT EXISTS ${GENERATED_DIRECTORY})
+	set(DIRECTORY_DATE 0)
+else()
+	execute_process(
+	COMMAND "stat"
+	"-c"
+	"%Y"
+	"${GENERATED_DIRECTORY}"
+	OUTPUT_VARIABLE DIRECTORY_DATE)
+endif()
 
 execute_process(
 COMMAND "stat"

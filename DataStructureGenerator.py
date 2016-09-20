@@ -33,7 +33,7 @@ print("Absolute output path: " + outputPath)
 
 
 # reference to StructConverter.h       
-converterHeaderFile = "StructConverter.h"
+converterHeaderFile = "jsonserializer/StructConverter.h"
 
 # references to serialize templates
 toJSONTemplates = "templates/ToJSONTemplates.cpp"
