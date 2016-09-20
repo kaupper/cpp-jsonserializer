@@ -15,7 +15,7 @@ namespace jsonserializer
     class Serializable : public Json::Value
     {
     public:
-        static Serializable Deserialize(const std::string& serializedString);
+        static std::shared_ptr<Serializable> Deserialize(const std::string& serializedString);
         
         Serializable(const Json::Value& json) : Serializable()
         {

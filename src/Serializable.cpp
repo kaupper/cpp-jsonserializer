@@ -9,15 +9,16 @@ std::string Serializable::Serialize() const
     return output;
 }
 
-Serializable Serializable::Deserialize(const std::string& serializedString)
+std::shared_ptr<Serializable> Serializable::Deserialize(const std::string& serializedString)
 {
     Json::Value root;
     Json::Reader reader;
     bool parsingSuccessful = reader.parse(serializedString, root);
     
     if(!parsingSuccessful) {
+        return nullptr;
         throw SerializableException("Deserializing failed! JSON string has bad format!");
     }
 
-    return root;
+    return std::make_shared<Serializable>(root);
 }
