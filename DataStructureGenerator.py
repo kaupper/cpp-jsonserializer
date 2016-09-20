@@ -333,7 +333,9 @@ def generateStructureToJSONConverter(file, deps):
     for d  in deps:
         includes = includes + "#include \"%s\"\n" % (d) 
    
-    prefix = includes + "\n" + """namespace jsonserializer::structures
+    prefix = includes + "\nusing namespace " + namespace + """; 
+    
+namespace jsonserializer::structures
 {
 """
     postfix = """}
@@ -371,7 +373,9 @@ def generateStructureFromJSONConverter(file, deps):
     for d  in deps:
         includes = includes + "#include \"%s\"\n" % (d) 
     
-    prefix = includes + "\n" + """namespace jsonserializer::structures
+    prefix = includes + "\nusing namespace " + namespace + """; 
+    
+namespace jsonserializer::structures
 {
 """
     postfix = """}
