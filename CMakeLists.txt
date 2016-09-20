@@ -29,7 +29,7 @@ endif()
 
 
 # set include directories
-include_directories(${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR})
+include_directories(${PROJECT_SOURCE_DIR}/jsonserializer ${PROJECT_SOURCE_DIR})
 # set sources
 file(GLOB GENERATED_SOURCES ${GENERATED_DIRECTORY}/*.cpp)
 set(SOURCES 
