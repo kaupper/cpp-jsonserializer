@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.6)
-project (jsonserializer)
+
+if(NOT JSON_SERIALIZER_NAME)
+    set(JSON_SERIALIZER_NAME jsonserializer)
+endif()
+
+project (${JSON_SERIALIZER_NAME})
 
 # -- setup structure generator 
 # check for generator flags
@@ -50,7 +55,7 @@ include("Jsoncpp.cmake")
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 target_include_directories (${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME} "jsoncpp")
-# SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES OUTPUT_NAME jsonserializer)
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 
 if(NOT WITHOUT_STRUCTS)
     add_custom_target(generated
