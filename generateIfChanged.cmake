@@ -1,4 +1,3 @@
-
 execute_process(
 COMMAND "stat"
 "-c"
@@ -31,6 +30,7 @@ if(${GENERATOR_DATE} GREATER ${DIRECTORY_DATE} OR ${JSON_FILE} GREATER ${DIRECTO
     "--json=${JSON_FILE}" 
     "--output=${GENERATED_DIRECTORY}" 
     "--header=${GENERATED_HEADER}"
+    "--namespace=${GENERATED_NAMESPACE}"
     )
 else()
     message(STATUS "Generated files are up to date")

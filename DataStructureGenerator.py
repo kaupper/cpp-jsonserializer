@@ -7,6 +7,7 @@ import shutil
 jsonFile = ""
 outputDir = "./generated/"
 outputFile = "include/generated.h"
+namespace = ""
 
 for arg in sys.argv:
     if arg.startswith("--json="):
@@ -15,12 +16,15 @@ for arg in sys.argv:
         outputDir = arg[len("--output="):]
     if arg.startswith("--header="):
         outputFile = arg[len("--header="):]
+    if arg.startswith("--namespace="):
+        namespace = arg[len("--namespace="):]
         
-if jsonFile == "" or outputDir == "" or outputFile == "":
-    print("Usage: %s --json=<struct_description_file> --output=<output_directory> --header=<common_header>" % (os.path.basename(__file__)))
+if jsonFile == "" or outputDir == "" or outputFile == "" or namespace == "":
+    print("Usage: %s --json=<struct_description_file> --output=<output_directory> --header=<common_header> --namespace=<namespace>" % (os.path.basename(__file__)))
     print("\tstruct_description_file: Specifies the file which should be used as template for our structs.")
     print("\toutput_directory: Specifies the output directory for generated files. Default is ./generated/.")
     print("\tcommon_header: Specifies the path and the file name for the header file which should be included in your application. Default is ./generated.h.")
+    print("\tnamespace: Sets the namespace of the generated structures to this string.")
     sys.exit(1)
     
 outputPath = os.path.abspath(outputDir) + "/"
@@ -66,10 +70,7 @@ def generateHeader(file, deps):
     for d in deps:
         includes = includes + "#include \"%s\"\n" % (d) 
     prefix = prefix + includes
-    prefix = prefix + """
-namespace jsonserializer::structures
-{
-"""
+    prefix = prefix + "\nnamespace " + namespace + "\n{\n"
    
     postfix = """}
 
@@ -167,7 +168,7 @@ def generateImplementation(file, deps):
         includes = includes + "#include \"%s\"\n" % (d) 
     
     prefix = includes + "\n"
-    prefix = prefix + """using namespace jsonserializer::structures;
+    prefix = prefix + """using namespace """ + namespace + """;
 
 template <typename T> T * deepCopyPointer(T * pointer) {
     if (pointer == nullptr) {

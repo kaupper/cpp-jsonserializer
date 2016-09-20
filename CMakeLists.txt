@@ -9,14 +9,17 @@ project (${JSON_SERIALIZER_NAME})
 # -- setup structure generator 
 # check for generator flags
 if(NOT WITHOUT_STRUCTS)
+    if(NOT GENERATED_NAMESPACE)
+        message(FATAL_ERROR "Please specify a namespace for your structures (GENERATED_NAMESPACE)!")
+    endif()
     if(NOT GENERATED_DIRECTORY)
-        message(FATAL_ERROR "Please specify a output directory for your structures!")
+        message(FATAL_ERROR "Please specify a output directory for your structures (GENERATED_DIRECTORY)!")
     endif()
     if(NOT GENERATED_HEADER)
-        message(FATAL_ERROR "Please specify a filename for your generated headerfile for your structures!")
+        message(FATAL_ERROR "Please specify a filename for your generated headerfile for your structures (GENERATED_HEADER)!")
     endif()
     if(NOT JSON_FILE)
-        message(FATAL_ERROR "Please specify a JSON template for your structures!")
+        message(FATAL_ERROR "Please specify a JSON template for your structures (JSON_FILE)!")
     endif()
 
     # execute generator at configuration time to provide actual output files to the linker (?)
@@ -26,6 +29,7 @@ if(NOT WITHOUT_STRUCTS)
         "--json=${JSON_FILE}" 
         "--output=${GENERATED_DIRECTORY}" 
         "--header=${GENERATED_HEADER}"
+        "--namespace=${GENERATED_NAMESPACE}"
     )
 
     if(${result})
@@ -64,6 +68,7 @@ if(NOT WITHOUT_STRUCTS)
         "-DJSON_FILE=${JSON_FILE}"
         "-DGENERATED_DIRECTORY=${GENERATED_DIRECTORY}"
         "-DGENERATED_HEADER=${GENERATED_HEADER}"
+        "-DGENERATED_NAMESPACE=${GENERATED_NAMESPACE}"
         "-P" 
         "${PROJECT_SOURCE_DIR}/generateIfChanged.cmake"
     )
