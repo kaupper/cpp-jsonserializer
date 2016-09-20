@@ -48,12 +48,13 @@ target_include_directories (${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME} "jsoncpp")
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES OUTPUT_NAME jsonserializer)
 
-# generator will be executed every time the lib is built
-add_custom_target(python_generator 
-COMMAND "python" 
-"${PROJECT_SOURCE_DIR}/DataStructureGenerator.py"
-"--json=${JSON_FILE}" 
-"--output=${GENERATED_DIRECTORY}" 
-"--header=${GENERATED_HEADER}"
+add_custom_target(generated
+COMMAND ${CMAKE_COMMAND} 
+"-DGENERATOR=${PROJECT_SOURCE_DIR}/DataStructureGenerator.py" 
+"-DJSON_FILE=${JSON_FILE}"
+"-DGENERATED_DIRECTORY=${GENERATED_DIRECTORY}"
+"-DGENERATED_HEADER=${GENERATED_HEADER}"
+"-P" 
+"${PROJECT_SOURCE_DIR}/generateIfChanged.cmake"
 )
-add_dependencies(${PROJECT_NAME} python_generator)
+add_dependencies(${PROJECT_NAME} generated)
