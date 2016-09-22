@@ -148,7 +148,7 @@ namespace jsonserializer::structures
                 n = field["cppName"]
                 t = field["type"]
                 buff = buff + tab + "%s * Get%s();" % (t, upper(n)) + linebreak + tab
-                buff = buff + tab + "%s & Get%sValue();" % (t, upper(n)) + linebreak + tab
+                buff = buff + tab + "%s & Get%sValue() const;" % (t, upper(n)) + linebreak + tab
 
             buff = buff + "};"
             buffer.append(buff);
@@ -319,7 +319,7 @@ template <typename T> T * deepCopyPointer(T * pointer) {
             # value getter
             for field in struct["fields"]:
                 fn = field["cppName"]
-                buff = buff + "%s & %s::Get%sValue()" % (field["type"], n, upper(fn)) + linebreak
+                buff = buff + "%s & %s::Get%sValue() const" % (field["type"], n, upper(fn)) + linebreak
                 buff = buff + "{" + linebreak + tab
                 buff = buff + "return *%s;" % (fn) + linebreak
                 buff = buff + "}" + linebreak + linebreak
