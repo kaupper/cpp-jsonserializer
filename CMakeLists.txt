@@ -59,17 +59,3 @@ include("Jsoncpp.cmake")
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 target_include_directories (${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME} "jsoncpp")
-
-if(NOT WITHOUT_STRUCTS)
-    add_custom_target(generated
-        COMMAND ${CMAKE_COMMAND} 
-        "-DGENERATOR=${PROJECT_SOURCE_DIR}/DataStructureGenerator.py" 
-        "-DJSON_FILE=${JSON_FILE}"
-        "-DGENERATED_DIRECTORY=${GENERATED_DIRECTORY}"
-        "-DGENERATED_HEADER=${GENERATED_HEADER}"
-        "-DGENERATED_NAMESPACE=${GENERATED_NAMESPACE}"
-        "-P" 
-        "${PROJECT_SOURCE_DIR}/generateIfChanged.cmake"
-    )
-    add_dependencies(${PROJECT_NAME} generated)
-endif()

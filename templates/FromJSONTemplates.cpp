@@ -3,9 +3,12 @@
 using namespace jsonserializer;
 using namespace jsonserializer::structures;
 
+#include <iostream>
+
 // convert "primitives"
 template <typename T> static T fromString(const std::string &string);
 template <> int fromString(const std::string &string) { return std::stoi(string); }
+template <> long fromString(const std::string &string) { return std::stol(string); }
 template <> float fromString(const std::string &string) { return std::stof(string); }
 template <> std::string fromString(const std::string &string) { return std::string(string); }
 template <> bool fromString(const std::string &string) { return (string == "true"); }
@@ -41,7 +44,7 @@ static void SET(const Json::Value &value, T *&obj) {
 
 // required fields
 template <typename T> 
-static void REQ(const Serializable &s, std::string &&jsonKey, T *&obj) {
+static void REQ(const Serializable &s, const std::string &jsonKey, T *&obj) {
     auto &tmp = s[jsonKey];
     if(tmp.isNull()) {
         throw SerializableException("Required argument \"" + jsonKey + "\" is missing!");
@@ -51,7 +54,7 @@ static void REQ(const Serializable &s, std::string &&jsonKey, T *&obj) {
 
 // optional fields
 template <typename T> 
-static void OPT(const Serializable &s, std::string &&jsonKey, T *&obj) {
+static void OPT(const Serializable &s, const std::string &jsonKey, T *&obj) {
     auto &tmp = s[jsonKey];
     if(!tmp.isNull()) {
         SET(tmp, obj);
