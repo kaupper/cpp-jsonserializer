@@ -5,50 +5,19 @@ import shutil
 
 
 jsonFile = ""
-outputDir = "./generated/"
-outputFile = "include/generated.h"
-namespace = ""
 
 for arg in sys.argv:
     if arg.startswith("--json="):
         jsonFile = arg[len("--json="):]
-    if arg.startswith("--output="):
-        outputDir = arg[len("--output="):]
-    if arg.startswith("--header="):
-        outputFile = arg[len("--header="):]
-    if arg.startswith("--namespace="):
-        namespace = arg[len("--namespace="):]
         
-if jsonFile == "" or outputDir == "" or outputFile == "" or namespace == "":
-    print("Usage: %s --json=<struct_description_file> --output=<output_directory> --header=<common_header> --namespace=<namespace>" % (os.path.basename(__file__)))
+if jsonFile == "":
+    print("Usage: %s --json=<struct_description_file>" % (os.path.basename(__file__)))
     print("\tstruct_description_file: Specifies the file which should be used as template for our structs.")
-    print("\toutput_directory: Specifies the output directory for generated files. Default is ./generated/.")
-    print("\tcommon_header: Specifies the path and the file name for the header file which should be included in your application. Default is ./generated.h.")
-    print("\tnamespace: Sets the namespace of the generated structures to this string.")
     sys.exit(1)
     
-outputPath = os.path.abspath(outputDir) + "/"
-
 print("JSON file: " + jsonFile)
-print("Output directory: " + outputDir)
-print("Header file: " + outputFile)
-print("Absolute output path: " + outputPath)
 
 
-
-# reference to StructConverter.h       
-converterHeaderFile = "jsonserializer/StructConverter.h"
-
-# references to serialize templates
-toJSONTemplates = "templates/ToJSONTemplates.cpp"
-fromJSONTemplates = "templates/FromJSONTemplates.cpp"
-
-# generated outputs
-headerFile = "DataStructures.h"
-implFile = "DataStructures.cpp"
-toJSONFile = "DataStructureConverterToJSON.cpp"
-fromJSONFile = "DataStructureConverterFromJSON.cpp"
-outputFile = outputFile
 
 
 def upper(s):
@@ -56,9 +25,9 @@ def upper(s):
     l[0] = l[0].upper()
     return ''.join(l)
 
-def generateHeader(file, deps):
-    prefix = """#ifndef JSON_SERIALIZER_DATA_STRUCTURES_H_
-#define JSON_SERIALIZER_DATA_STRUCTURES_H_
+def generateHeader(file, structures, namespace, deps):
+    prefix = """#ifndef JSON_SERIALIZER_DATA_STRUCTURES_""" + namespace.upper() + """_H_
+#define JSON_SERIALIZER_DATA_STRUCTURES_""" + namespace.upper() + """_H_
 
 #include <vector>
 #include <string>
@@ -74,7 +43,7 @@ def generateHeader(file, deps):
    
     postfix = """}
 
-#endif // JSON_SERIALIZER_DATA_STRUCTURES_H_
+#endif // JSON_SERIALIZER_DATA_STRUCTURES_""" + namespace.upper() + """_H_
 """
     tab = "    "
     linebreak = "\n"
@@ -82,9 +51,6 @@ def generateHeader(file, deps):
     buffer = []
     with open(file, "w") as f:
         f.write(prefix)
-        with open(jsonFile) as data_file:    
-            structures = json.load(data_file)
-
         
         for struct in structures:
             names.append(struct["name"])
@@ -150,6 +116,7 @@ def generateHeader(file, deps):
                 t = field["type"]
                 buff = buff + tab + "%s * Get%s();" % (t, upper(n)) + linebreak + tab
                 buff = buff + tab + "%s & Get%sValue() const;" % (t, upper(n)) + linebreak + tab
+                buff = buff + tab + "void Set%s(const %s &%s);" % (upper(n), t, n) + linebreak + tab
 
             buff = buff + "};"
             buffer.append(buff);
@@ -162,7 +129,7 @@ def generateHeader(file, deps):
         
         f.write(postfix)
         
-def generateImplementation(file, deps):
+def generateImplementation(file, structures, namespace, deps):
     includes = ""
     for d  in deps:
         includes = includes + "#include \"%s\"\n" % (d) 
@@ -185,9 +152,6 @@ template <typename T> T * deepCopyPointer(T * pointer) {
     with open(file, "w") as f:
         f.write(prefix)
         
-        with open(jsonFile) as data_file:    
-            structures = json.load(data_file)
-
         # generate copy functions
         for struct in structures:
             buff = "static " + struct["name"] + " & copy(" + struct["name"] + " &lhs, const " + struct["name"] + " &rhs)" + linebreak
@@ -203,7 +167,6 @@ template <typename T> T * deepCopyPointer(T * pointer) {
             buff = "static %s & move(%s &lhs, %s &rhs)" % (struct["name"], struct["name"], struct["name"]) + linebreak
             buff = buff + "{" + linebreak
             for field in struct["fields"]:
-                #buff = buff + tab + "delete lhs.%s;\n lhs.%s = std::move(rhs.%s);\n rhs.%s = nullptr;" % (field["cppName"], field["cppName"], field["cppName"], field["cppName"]) + linebreak
                 buff = buff + tab + "std::swap(lhs.%s, rhs.%s);" % (field["cppName"], field["cppName"]) + linebreak
             buff = buff + tab + "return lhs;" + linebreak
             buff = buff + "}" + linebreak + linebreak
@@ -324,11 +287,22 @@ template <typename T> T * deepCopyPointer(T * pointer) {
                 buff = buff + "{" + linebreak + tab
                 buff = buff + "return *%s;" % (fn) + linebreak
                 buff = buff + "}" + linebreak + linebreak
+            # setter
+            for field in struct["fields"]:
+                fn = field["cppName"]
+                t = field["type"]
+                buff = buff + "void %s::Set%s(const %s &%s)" % (n, upper(fn), t, fn) + linebreak
+                buff = buff + "{" + linebreak + tab
+                buff = buff + "if(this->%s != nullptr) {" % (fn) + linebreak + tab + tab
+                buff = buff + "delete this->%s;" % (fn) + linebreak + tab
+                buff = buff + "}" + linebreak + tab
+                buff = buff + "this->%s = new %s(%s);" % (fn, t, fn) + linebreak 
+                buff = buff + "}" + linebreak + linebreak
             f.write(buff)
             
         f.write(postfix)
         
-def generateStructureToJSONConverter(file, deps):
+def generateStructureToJSONConverter(file, structures, namespace, deps):
     includes = ""
     for d  in deps:
         includes = includes + "#include \"%s\"\n" % (d) 
@@ -346,8 +320,6 @@ namespace jsonserializer::structures
     with open(file, "w") as f:
         f.write(prefix)
         
-        with open(jsonFile) as data_file:    
-            structures = json.load(data_file)
         for struct in structures:
             buff = tab + "template <> Serializable Converter::ToJSON(const %s &obj)" % (struct["name"]) + linebreak
             buff = buff + tab + "{" + linebreak + tab
@@ -368,7 +340,7 @@ namespace jsonserializer::structures
         
         f.write(postfix)
         
-def generateStructureFromJSONConverter(file, deps):
+def generateStructureFromJSONConverter(file, structures, namespace, deps):
     includes = ""
     for d  in deps:
         includes = includes + "#include \"%s\"\n" % (d) 
@@ -386,8 +358,6 @@ namespace jsonserializer::structures
     with open(file, "w") as f:
         f.write(prefix)
         
-        with open(jsonFile) as data_file:    
-            structures = json.load(data_file)
         for struct in structures:
             buff = tab + "template <> %s Converter::FromJSON(const Serializable &json)" % (struct["name"]) + linebreak
             buff = buff + tab + "{" + linebreak 
@@ -409,9 +379,9 @@ namespace jsonserializer::structures
         f.write(postfix)
         
 
-def generateCommonHeader(file, deps):
-    content = """#ifndef JSON_SERIALIZER_GENERATED_SOURCES_H_
-#define JSON_SERIALIZER_GENERATED_SOURCES_H_
+def generateCommonHeader(file, namespace, deps):
+    content = """#ifndef JSON_SERIALIZER_GENERATED_SOURCES_""" + namespace.upper() + """_H_
+#define JSON_SERIALIZER_GENERATED_SOURCES_""" + namespace.upper() + """_H_
 
 """
     includes = ""
@@ -419,22 +389,45 @@ def generateCommonHeader(file, deps):
         includes = includes + "#include \"%s\"\n" % (d) 
     content = content + includes
     content = content + """    
-#endif // JSON_SERIALIZER_GENERATED_SOURCES_H_
+#endif // JSON_SERIALIZER_GENERATED_SOURCES_""" + namespace.upper() + """_H_
 """
     with open(file, "w") as f:
         f.write(content)
 
 
+if __name__ == "__main__":
+    # reference to StructConverter.h       
+    converterHeaderFile = "jsonserializer/StructConverter.h"
 
-if os.path.isdir(outputPath):
-    shutil.rmtree(outputPath)
-os.makedirs(outputPath)
-if os.path.exists(outputFile):
-    os.remove(outputFile)
+    # references to serialize templates
+    toJSONTemplates = "templates/ToJSONTemplates.cpp"
+    fromJSONTemplates = "templates/FromJSONTemplates.cpp"
 
-generateHeader(outputPath + headerFile, [converterHeaderFile])
-generateImplementation(outputPath + implFile, [headerFile])
-generateStructureToJSONConverter(outputPath + toJSONFile, [headerFile, toJSONTemplates])
-generateStructureFromJSONConverter(outputPath + fromJSONFile, [headerFile, fromJSONTemplates])
+    # generated outputs
+    headerFile = "DataStructures.h"
+    implFile = "DataStructures.cpp"
+    toJSONFile = "DataStructureConverterToJSON.cpp"
+    fromJSONFile = "DataStructureConverterFromJSON.cpp"
 
-generateCommonHeader(outputFile, [(outputPath + headerFile)])
+
+    with open(jsonFile, "r") as dataFile:
+        json = json.load(dataFile)
+
+    for structureSet in json:
+        outputPath = structureSet["outputDirectory"]
+        commonHeader = structureSet["commonHeader"]
+        namespace = structureSet["namespace"]
+        definitions = structureSet["definitions"]
+
+        if os.path.isdir(outputPath):
+            shutil.rmtree(outputPath)
+        os.makedirs(outputPath)
+        if os.path.exists(commonHeader):
+            os.remove(commonHeader)
+
+        generateHeader(outputPath + headerFile, definitions, namespace, [converterHeaderFile])
+        generateImplementation(outputPath + implFile, definitions, namespace, [headerFile])
+        generateStructureToJSONConverter(outputPath + toJSONFile, definitions, namespace, [headerFile, toJSONTemplates])
+        generateStructureFromJSONConverter(outputPath + fromJSONFile, definitions, namespace, [headerFile, fromJSONTemplates])
+
+        generateCommonHeader(commonHeader, namespace, [(outputPath + headerFile)])
