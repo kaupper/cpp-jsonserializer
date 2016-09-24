@@ -74,7 +74,10 @@ def generateHeader(file, structures, namespace, deps):
             requiredCount = 0
             
             for field in struct["fields"]:
-                if field["required"] == "true":
+                required = "true"
+                if "required" in field:
+                    required = field["required"]
+                if required == "true":
                     requiredCount += 1
             
             # constructor for required members
@@ -83,7 +86,10 @@ def generateHeader(file, structures, namespace, deps):
                 tmp = tmp + "%s(" % (struct["name"])
                 first = True
                 for field in struct["fields"]:
-                    if field["required"] == "true":
+                    required = "true"
+                    if "required" in field:
+                        required = field["required"]
+                    if required == "true":
                         if not first:
                             tmp = tmp + ", "
                         tmp = tmp + "const %s &" % (field["type"])
@@ -230,7 +236,10 @@ template <typename T> T * deepCopyPointer(T * pointer) {
             requiredCount = 0
             
             for field in struct["fields"]:
-                if field["required"] == "true":
+                required = "true"
+                if "required" in field:
+                    required = field["required"]
+                if required == "true":
                     requiredCount += 1
                     
             # constructor for required members
@@ -238,7 +247,10 @@ template <typename T> T * deepCopyPointer(T * pointer) {
                 buff = buff + "%s::%s(" % (n, n)
                 first = True
                 for field in struct["fields"]:
-                    if field["required"] == "true":
+                    required = "true"
+                    if "required" in field:
+                        required = field["required"]
+                    if required == "true":
                         if not first:
                             buff = buff + ", " 
                         buff = buff + "const %s &%s" % (field["type"], field["cppName"])
@@ -246,7 +258,10 @@ template <typename T> T * deepCopyPointer(T * pointer) {
                 buff = buff + ") : %s()" % (struct["name"]) + linebreak 
                 buff = buff + "{" + linebreak 
                 for field in struct["fields"]:
-                    if field["required"] == "true":
+                    required = "true"
+                    if "required" in field:
+                        required = field["required"]
+                    if required == "true":
                         buff = buff + tab + "this->%s = new %s(%s);" % (field["cppName"], field["type"], field["cppName"]) + linebreak
                 buff = buff + "}" + linebreak + linebreak 
  
@@ -262,7 +277,10 @@ template <typename T> T * deepCopyPointer(T * pointer) {
                 buff = buff + ") : %s(" % (struct["name"])
                 first = True
                 for field in struct["fields"]:
-                    if field["required"] == "true":
+                    required = "true"
+                    if "required" in field:
+                        required = field["required"]
+                    if required == "true":
                         requiredCount += 1
                         if not first:
                             buff = buff + ", " 
@@ -272,7 +290,11 @@ template <typename T> T * deepCopyPointer(T * pointer) {
                 
                 buff = buff + "{" + linebreak
                 for field in struct["fields"]:
-                    buff = buff + tab + "this->%s = new %s(%s);" % (field["cppName"], field["type"], field["cppName"]) + linebreak
+                    required = "true"
+                    if "required" in field:
+                        required = field["required"]
+                    if required != "true":
+                        buff = buff + tab + "this->%s = new %s(%s);" % (field["cppName"], field["type"], field["cppName"]) + linebreak
                 buff = buff + "}" + linebreak + linebreak
  
             # getter
@@ -334,7 +356,10 @@ namespace jsonserializer::structures
             buff = buff + tab + "Serializable s;" + linebreak
             
             for field in struct["fields"]:
-                if field["required"] == "true":
+                required = "true"
+                if "required" in field:
+                    required = field["required"]
+                if required == "true":
                     func = "REQ"
                 else:
                     func = "OPT"
@@ -375,7 +400,10 @@ namespace jsonserializer::structures
             buff = buff + tab + tab + "%s obj;" % (struct["name"]) + linebreak
             
             for field in struct["fields"]:
-                if field["required"] == "true":
+                required = "true"
+                if "required" in field:
+                    required = field["required"]
+                if required == "true":
                     func = "REQ"
                 else:
                     func = "OPT"
@@ -444,7 +472,7 @@ if __name__ == "__main__":
         if "namespace" in structureSet:
             namespace = structureSet["namespace"]
         else:
-            namespace = "jsonserializer::default"
+            namespace = "jsonserializer::generated"
         
         dependencies = includes[:] 
         if "dependencies" in structureSet:

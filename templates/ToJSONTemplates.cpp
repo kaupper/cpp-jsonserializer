@@ -11,13 +11,23 @@ static typename std::enable_if<isPrimitive<T>, void>::type SET(Serializable &s, 
 
 template <typename T> 
 static typename std::enable_if<!isPrimitive<T>, void>::type SET(Serializable &s, const std::string &jsonKey, const T *const obj) {
-    s[jsonKey] = Converter::ToJSON(obj);
+    auto json = Converter::ToJSON(obj);
+    if(T::__transient) {
+        for(auto it = json.begin(); it != json.end(); ++it) {
+	    if(s.isMember(it.name())) {
+	        throw SerializableException("Field \"" + it.name() + "\" does already exist!");
+	    }
+	    s[it.name()] = (*it);
+	}
+    } else {
+        s[jsonKey] = json;
+    }
 }
 
 template <typename T> 
 static void REQ(Serializable &s, const std::string &jsonKey, const T *const obj) {
     if(obj == nullptr) {
-        throw SerializableException("Required argument \"" + jsonKey + "\" is missing!");
+        throw SerializableException("Required field \"" + jsonKey + "\" is missing!");
     }
     SET(s, jsonKey, obj);
 }

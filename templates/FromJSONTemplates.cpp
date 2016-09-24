@@ -45,18 +45,42 @@ static void SET(const Json::Value &value, T *&obj) {
 // required fields
 template <typename T> 
 static void REQ(const Serializable &s, const std::string &jsonKey, T *&obj) {
-    auto &tmp = s[jsonKey];
-    if(tmp.isNull()) {
-        throw SerializableException("Required argument \"" + jsonKey + "\" is missing!");
+    if(false) {
+        obj = new T(Converter::FromJSON<T>(s)); 
+    } else {
+	auto &tmp = s[jsonKey];
+	if(tmp.isNull()) {
+	    throw SerializableException("Required argument \"" + jsonKey + "\" is missing!");
+	}
+	SET(tmp, obj);
     }
-    SET(tmp, obj);
 }
 
 // optional fields
-template <typename T> 
-static void OPT(const Serializable &s, const std::string &jsonKey, T *&obj) {
+template <typename T>
+static void _OPT(const Serializable &s, const std::string &jsonKey, T *&obj) {
     auto &tmp = s[jsonKey];
     if(!tmp.isNull()) {
         SET(tmp, obj);
     }
 }
+
+template <typename T> 
+static typename std::enable_if<isSomethingElse<T>, void>::type OPT(const Serializable &s, const std::string &jsonKey, T *&obj) {
+    if(T::__transient) {
+	try {
+            obj = new T(Converter::FromJSON<T>(s)); 
+	} catch (...) {
+	    // nothing to be done
+	}
+    } else {
+	_OPT(s, jsonKey, obj);
+    }
+}
+
+template <typename T> 
+static typename std::enable_if<!isSomethingElse<T>, void>::type OPT(const Serializable &s, const std::string &jsonKey, T *&obj)
+{
+    _OPT(s, jsonKey, obj);
+}
+
