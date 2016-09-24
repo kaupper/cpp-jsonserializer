@@ -5,14 +5,18 @@ import shutil
 
 
 jsonFile = ""
+includes = []
 
 for arg in sys.argv:
     if arg.startswith("--json="):
         jsonFile = arg[len("--json="):]
+    if arg.startswith("--include="):
+        includes.append(arg[len("--include=")])
         
 if jsonFile == "":
-    print("Usage: %s --json=<struct_description_file>" % (os.path.basename(__file__)))
+    print("Usage: %s --json=<struct_description_file> [--include=<include_header>]" % (os.path.basename(__file__)))
     print("\tstruct_description_file: Specifies the file which should be used as template for our structs.")
+    print("\tinclude_header: If your structs need certain headers to be included you can specify one or more --include clauses (for example --include=<string> or --include=\"relativeHeader.h\")")
     sys.exit(1)
     
 print("JSON file: " + jsonFile)
@@ -26,24 +30,20 @@ def upper(s):
     return ''.join(l)
 
 def generateHeader(file, structures, namespace, deps):
-    prefix = """#ifndef JSON_SERIALIZER_DATA_STRUCTURES_""" + namespace.upper() + """_H_
-#define JSON_SERIALIZER_DATA_STRUCTURES_""" + namespace.upper() + """_H_
+    prefix = """#ifndef JSON_SERIALIZER_DATA_STRUCTURES_""" + namespace.upper().replace("::", "_") + """_H_
+#define JSON_SERIALIZER_DATA_STRUCTURES_""" + namespace.upper().replace("::", "_") + """_H_
 
-#include <vector>
-#include <string>
 #include <map>
-
-"""
-
+""" 
     includes = ""
     for d in deps:
-        includes = includes + "#include \"%s\"\n" % (d) 
+        includes = includes + "#include %s\n" % (d) 
     prefix = prefix + includes
     prefix = prefix + "\nnamespace " + namespace + "\n{\n"
    
     postfix = """}
 
-#endif // JSON_SERIALIZER_DATA_STRUCTURES_""" + namespace.upper() + """_H_
+#endif // JSON_SERIALIZER_DATA_STRUCTURES_""" + namespace.upper().replace("::", "_") + """_H_
 """
     tab = "    "
     linebreak = "\n"
@@ -53,22 +53,23 @@ def generateHeader(file, structures, namespace, deps):
         f.write(prefix)
         
         for struct in structures:
+            n = struct["name"]
             names.append(struct["name"])
             
-            buff = "struct "
-            buff = buff + struct["name"] + linebreak + tab + "{" + linebreak + tab + tab
+            buff = "struct %s" % (n) + linebreak + tab
+            buff = buff + "{" + linebreak + tab + tab
             # constructor
-            buff = buff + struct["name"] + "();" + linebreak + tab + tab
+            buff = buff + "%s();" % (n) + linebreak + tab + tab
             # destructor
-            buff = buff + "virtual ~" + struct["name"] + "();" + linebreak + tab + tab
+            buff = buff + "virtual ~%s();" % (n) + linebreak + tab + tab
             # copy constructor
-            buff = buff + struct["name"] + "(const " + struct["name"] + " &);" + linebreak + tab + tab
+            buff = buff + "%s(const %s &);" % (n, n) + linebreak + tab + tab
             # assignment
-            buff = buff + struct["name"] + " & operator=(const " + struct["name"] + " &);" + linebreak + tab + tab
+            buff = buff + "%s & operator=(const %s &);" % (n, n) + linebreak + tab + tab
             # move constructor
-            buff = buff + struct["name"] + "(" + struct["name"] + " &&);" + linebreak + tab + tab
+            buff = buff + "%s(%s &&);" % (n, n) + linebreak + tab + tab
             # move assignment
-            buff = buff + struct["name"] + " & operator=(" + struct["name"] + " &&);" + linebreak + tab + tab
+            buff = buff + "%s & operator=(%s &&);" % (n, n) + linebreak + tab + tab
 
             requiredCount = 0
             
@@ -85,7 +86,7 @@ def generateHeader(file, structures, namespace, deps):
                     if field["required"] == "true":
                         if not first:
                             tmp = tmp + ", "
-                        tmp = tmp + "%s %s" % (field["type"], field["cppName"])
+                        tmp = tmp + "const %s &" % (field["type"])
                         first = False
                 tmp = tmp + ");" + linebreak + tab 
                 buff = buff + tmp
@@ -97,9 +98,16 @@ def generateHeader(file, structures, namespace, deps):
                 for field in struct["fields"]:
                     if not first:
                         buff = buff + ", " 
-                    buff = buff + "%s %s" % (field["type"], field["cppName"])
+                    buff = buff + "const %s &" % (field["type"])
                     first = False
                 buff = buff + ");" + linebreak + tab 
+
+            transient = "false"
+            if "transient" in struct:
+                transient = struct["transient"]
+
+            buff = buff + linebreak + tab
+            buff = buff + "static const bool __transient = %s;" % (transient) + linebreak + tab
 
             if len(struct["fields"]) > 0:
                 buff = buff + linebreak + tab
@@ -132,7 +140,7 @@ def generateHeader(file, structures, namespace, deps):
 def generateImplementation(file, structures, namespace, deps):
     includes = ""
     for d  in deps:
-        includes = includes + "#include \"%s\"\n" % (d) 
+        includes = includes + "#include %s\n" % (d) 
     
     prefix = includes + "\n"
     prefix = prefix + """using namespace """ + namespace + """;
@@ -233,7 +241,7 @@ template <typename T> T * deepCopyPointer(T * pointer) {
                     if field["required"] == "true":
                         if not first:
                             buff = buff + ", " 
-                        buff = buff + "%s %s" % (field["type"], field["cppName"])
+                        buff = buff + "const %s &%s" % (field["type"], field["cppName"])
                         first = False
                 buff = buff + ") : %s()" % (struct["name"]) + linebreak 
                 buff = buff + "{" + linebreak 
@@ -249,7 +257,7 @@ template <typename T> T * deepCopyPointer(T * pointer) {
                 for field in struct["fields"]:
                     if not first:
                         buff = buff + ", " 
-                    buff = buff + "%s %s" % (field["type"], field["cppName"])
+                    buff = buff + "const %s &%s" % (field["type"], field["cppName"])
                     first = False
                 buff = buff + ") : %s(" % (struct["name"])
                 first = True
@@ -305,7 +313,7 @@ template <typename T> T * deepCopyPointer(T * pointer) {
 def generateStructureToJSONConverter(file, structures, namespace, deps):
     includes = ""
     for d  in deps:
-        includes = includes + "#include \"%s\"\n" % (d) 
+        includes = includes + "#include %s\n" % (d) 
    
     prefix = includes + "\nusing namespace " + namespace + """; 
     
@@ -330,7 +338,10 @@ namespace jsonserializer::structures
                     func = "REQ"
                 else:
                     func = "OPT"
-                buff = buff + tab + tab + "%s(s, \"%s\", obj.%s);" % (func, field["jsonName"], field["cppName"]) + linebreak
+                jsonName = field["cppName"]
+                if "jsonName" in field:
+                    jsonName = field["jsonName"]
+                buff = buff + tab + tab + "%s(s, \"%s\", obj.%s);" % (func, jsonName, field["cppName"]) + linebreak
             
             buff = buff + tab + tab + "return s;" + linebreak
             buff = buff + tab + "}" + linebreak
@@ -343,7 +354,7 @@ namespace jsonserializer::structures
 def generateStructureFromJSONConverter(file, structures, namespace, deps):
     includes = ""
     for d  in deps:
-        includes = includes + "#include \"%s\"\n" % (d) 
+        includes = includes + "#include %s\n" % (d) 
     
     prefix = includes + "\nusing namespace " + namespace + """; 
     
@@ -368,7 +379,10 @@ namespace jsonserializer::structures
                     func = "REQ"
                 else:
                     func = "OPT"
-                buff = buff + tab + tab + "%s(json, \"%s\", obj.%s);" % (func, field["jsonName"], field["cppName"]) + linebreak
+                jsonName = field["cppName"]
+                if "jsonName" in field:
+                    jsonName = field["jsonName"]
+                buff = buff + tab + tab + "%s(json, \"%s\", obj.%s);" % (func, jsonName, field["cppName"]) + linebreak
             
             buff = buff + tab + tab + "return std::move(obj);" + linebreak
             buff = buff + tab + "}" + linebreak
@@ -380,16 +394,16 @@ namespace jsonserializer::structures
         
 
 def generateCommonHeader(file, namespace, deps):
-    content = """#ifndef JSON_SERIALIZER_GENERATED_SOURCES_""" + namespace.upper() + """_H_
-#define JSON_SERIALIZER_GENERATED_SOURCES_""" + namespace.upper() + """_H_
+    content = """#ifndef JSON_SERIALIZER_GENERATED_SOURCES_""" + namespace.upper().replace("::", "_") + """_H_
+#define JSON_SERIALIZER_GENERATED_SOURCES_""" + namespace.upper().replace("::", "_").replace("::", "_") + """_H_
 
 """
     includes = ""
     for d  in deps:
-        includes = includes + "#include \"%s\"\n" % (d) 
+        includes = includes + "#include %s\n" % (d) 
     content = content + includes
     content = content + """    
-#endif // JSON_SERIALIZER_GENERATED_SOURCES_""" + namespace.upper() + """_H_
+#endif // JSON_SERIALIZER_GENERATED_SOURCES_""" + namespace.upper().replace("::", "_") + """_H_
 """
     with open(file, "w") as f:
         f.write(content)
@@ -397,11 +411,11 @@ def generateCommonHeader(file, namespace, deps):
 
 if __name__ == "__main__":
     # reference to StructConverter.h       
-    converterHeaderFile = "jsonserializer/StructConverter.h"
+    converterHeaderFile = "\"jsonserializer/StructConverter.h\""
 
     # references to serialize templates
-    toJSONTemplates = "templates/ToJSONTemplates.cpp"
-    fromJSONTemplates = "templates/FromJSONTemplates.cpp"
+    toJSONTemplates = "\"templates/ToJSONTemplates.cpp\""
+    fromJSONTemplates = "\"templates/FromJSONTemplates.cpp\""
 
     # generated outputs
     headerFile = "DataStructures.h"
@@ -411,23 +425,46 @@ if __name__ == "__main__":
 
 
     with open(jsonFile, "r") as dataFile:
-        json = json.load(dataFile)
+        data = json.load(dataFile)
 
-    for structureSet in json:
-        outputPath = structureSet["outputDirectory"]
-        commonHeader = structureSet["commonHeader"]
-        namespace = structureSet["namespace"]
-        definitions = structureSet["definitions"]
+    for structureSet in data:
+        if "outputDirectory" in structureSet:
+            outputPath = structureSet["outputDirectory"]
+        else:
+            outputPath = "generated"
+        path = os.path.join(os.path.join(os.path.dirname(__file__), "generated"), outputPath)
 
-        if os.path.isdir(outputPath):
-            shutil.rmtree(outputPath)
-        os.makedirs(outputPath)
+        if "commonHeader" in structureSet:
+            commonHeader = structureSet["commonHeader"]
+        else:
+            commonHeader = "generated.h"
+        commonHeader = os.path.join(os.path.dirname(jsonFile), commonHeader)
+        print("Commonheader: " + commonHeader)
+
+        if "namespace" in structureSet:
+            namespace = structureSet["namespace"]
+        else:
+            namespace = "jsonserializer::default"
+        
+        dependencies = includes[:] 
+        if "dependencies" in structureSet:
+            dependencies = structureSet["dependencies"]
+
+        if "definitionsFile" in structureSet:
+            with open(os.path.join(os.path.dirname(jsonFile), structureSet["definitionsFile"]), "r") as file:
+                definitions = json.load(file)
+        else:
+            definitions = structureSet["definitions"]
+
+        if os.path.isdir(path):
+            shutil.rmtree(path)
+        os.makedirs(path)
         if os.path.exists(commonHeader):
             os.remove(commonHeader)
 
-        generateHeader(outputPath + headerFile, definitions, namespace, [converterHeaderFile])
-        generateImplementation(outputPath + implFile, definitions, namespace, [headerFile])
-        generateStructureToJSONConverter(outputPath + toJSONFile, definitions, namespace, [headerFile, toJSONTemplates])
-        generateStructureFromJSONConverter(outputPath + fromJSONFile, definitions, namespace, [headerFile, fromJSONTemplates])
+        generateHeader(os.path.join(path, headerFile), definitions, namespace, dependencies + [converterHeaderFile])
+        generateImplementation(os.path.join(path, implFile), definitions, namespace, dependencies + ["\"" + headerFile + "\""])
+        generateStructureToJSONConverter(os.path.join(path, toJSONFile), definitions, namespace, dependencies + ["\"" + headerFile + "\"", toJSONTemplates])
+        generateStructureFromJSONConverter(os.path.join(path, fromJSONFile), definitions, namespace, dependencies + ["\"" + headerFile + "\"", fromJSONTemplates])
 
-        generateCommonHeader(commonHeader, namespace, [(outputPath + headerFile)])
+        generateCommonHeader(commonHeader, namespace, dependencies + ["\"" + os.path.join(path, headerFile).replace(os.path.dirname(jsonFile), "")[1:] + "\""])
