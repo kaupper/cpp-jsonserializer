@@ -29,7 +29,10 @@ endif()
 
 # set include directories
 include_directories(${PROJECT_SOURCE_DIR}/jsonserializer ${PROJECT_SOURCE_DIR})
+file(GLOB_RECURSE GLOB_SOURCES DataStructures.cpp)
 file(GLOB_RECURSE SOURCES *.cpp)
+set(SOURCES ${GLOB_SOURCES} ${SOURCES})
+list(REMOVE_DUPLICATES SOURCES)
 
 # include jsoncpp
 include("Jsoncpp.cmake")

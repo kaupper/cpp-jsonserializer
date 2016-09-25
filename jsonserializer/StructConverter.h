@@ -19,7 +19,9 @@ namespace jsonserializer::structures
     template <typename T> const bool isVector = _isVector<T>::value;
     
     template <typename T> const bool isSomethingElse = !isPrimitive<T> && !isVector<T>;
-    
+   
+    template <typename T> const bool isKnownStructure = false;
+
     class Converter
     {    
     public:

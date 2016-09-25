@@ -10,7 +10,7 @@ static typename std::enable_if<isPrimitive<T>, void>::type SET(Serializable &s, 
 }
 
 template <typename T> 
-static typename std::enable_if<!isPrimitive<T>, void>::type SET(Serializable &s, const std::string &jsonKey, const T *const obj) {
+static typename std::enable_if<isKnownStructure<T>, void>::type SET(Serializable &s, const std::string &jsonKey, const T *const obj) {
     auto json = Converter::ToJSON(obj);
     if(T::__transient) {
         for(auto it = json.begin(); it != json.end(); ++it) {
@@ -22,6 +22,11 @@ static typename std::enable_if<!isPrimitive<T>, void>::type SET(Serializable &s,
     } else {
         s[jsonKey] = json;
     }
+}
+
+template <typename T> 
+static typename std::enable_if<isVector<T>, void>::type SET(Serializable &s, const std::string &jsonKey, const T *const obj) {
+    s[jsonKey] = Converter::ToJSON(obj);
 }
 
 template <typename T> 

@@ -15,19 +15,19 @@ template <> bool fromString(const std::string &string) { return (string == "true
 
 // create primitives
 template <typename T> 
-static typename std::enable_if<isPrimitive<T>, T>::type CREATE(const Serializable &value) {
+static typename std::enable_if<isPrimitive<T>, T>::type CREATE(const Json::Value &value) {
     return fromString<T>(value.asString());
 }
 
 // create instance of generated data structure
 template <typename T> 
-static typename std::enable_if<isSomethingElse<T>, T>::type CREATE(const Serializable &value) {
+static typename std::enable_if<isKnownStructure<T>, T>::type CREATE(const Json::Value &value) {
     return Converter::FromJSON<T>(value);
 }
 
 // we may have a vector as type as well (so, create it)
 template <typename T>
-static typename std::enable_if<isVector<T>, T>::type CREATE(const Serializable &value) {
+static typename std::enable_if<isVector<T>, T>::type CREATE(const Json::Value &value) {
     T obj;
     for(unsigned int i = 0; i < value.size(); i++) {
         obj.push_back(CREATE<typename T::value_type>(value[i]));
@@ -41,19 +41,28 @@ static void SET(const Json::Value &value, T *&obj) {
     obj = new T(CREATE<T>(value));
 }
 
-
 // required fields
 template <typename T> 
-static void REQ(const Serializable &s, const std::string &jsonKey, T *&obj) {
-    if(false) {
+static void _REQ(const Serializable &s, const std::string &jsonKey, T *&obj) {
+    auto &tmp = s[jsonKey];
+    if(tmp.isNull()) {
+        throw SerializableException("Required argument \"" + jsonKey + "\" is missing!");
+    }
+    SET(tmp, obj);
+}
+
+template <typename T> 
+static typename std::enable_if<isKnownStructure<T>, void>::type REQ(const Serializable &s, const std::string &jsonKey, T *&obj) {
+    if(T::__transient) {
         obj = new T(Converter::FromJSON<T>(s)); 
     } else {
-	auto &tmp = s[jsonKey];
-	if(tmp.isNull()) {
-	    throw SerializableException("Required argument \"" + jsonKey + "\" is missing!");
-	}
-	SET(tmp, obj);
+	_REQ(s, jsonKey, obj);
     }
+}
+
+template <typename T> 
+static typename std::enable_if<!isKnownStructure<T>, void>::type REQ(const Serializable &s, const std::string &jsonKey, T *&obj) {
+    _REQ(s, jsonKey, obj);
 }
 
 // optional fields
@@ -66,7 +75,7 @@ static void _OPT(const Serializable &s, const std::string &jsonKey, T *&obj) {
 }
 
 template <typename T> 
-static typename std::enable_if<isSomethingElse<T>, void>::type OPT(const Serializable &s, const std::string &jsonKey, T *&obj) {
+static typename std::enable_if<isKnownStructure<T>, void>::type OPT(const Serializable &s, const std::string &jsonKey, T *&obj) {
     if(T::__transient) {
 	try {
             obj = new T(Converter::FromJSON<T>(s)); 
@@ -79,7 +88,7 @@ static typename std::enable_if<isSomethingElse<T>, void>::type OPT(const Seriali
 }
 
 template <typename T> 
-static typename std::enable_if<!isSomethingElse<T>, void>::type OPT(const Serializable &s, const std::string &jsonKey, T *&obj)
+static typename std::enable_if<!isKnownStructure<T>, void>::type OPT(const Serializable &s, const std::string &jsonKey, T *&obj)
 {
     _OPT(s, jsonKey, obj);
 }

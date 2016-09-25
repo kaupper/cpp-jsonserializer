@@ -41,8 +41,7 @@ def generateHeader(file, structures, namespace, deps):
     prefix = prefix + includes
     prefix = prefix + "\nnamespace " + namespace + "\n{\n"
    
-    postfix = """}
-
+    postfix = """
 #endif // JSON_SERIALIZER_DATA_STRUCTURES_""" + namespace.upper().replace("::", "_") + """_H_
 """
     tab = "    "
@@ -113,7 +112,7 @@ def generateHeader(file, structures, namespace, deps):
                 transient = struct["transient"]
 
             buff = buff + linebreak + tab
-            buff = buff + "static const bool __transient = %s;" % (transient) + linebreak + tab
+            buff = buff + tab + "static const bool __transient = %s;" % (transient) + linebreak + tab
 
             if len(struct["fields"]) > 0:
                 buff = buff + linebreak + tab
@@ -140,8 +139,15 @@ def generateHeader(file, structures, namespace, deps):
                 
         for buff in buffer:
             f.write(linebreak + tab + buff + linebreak)
-        
+        f.write("}\n")
+
+        f.write("namespace jsonserializer::structures\n{\n")
+        f.write("    template <typename T> const bool isKnownStructure = false;\n")
+        for struct in structures:
+            f.write("    template <> const bool isKnownStructure<%s> = true;\n" % (namespace + "::" + struct["name"]))
+        f.write("}\n\n")
         f.write(postfix)
+
         
 def generateImplementation(file, structures, namespace, deps):
     includes = ""
