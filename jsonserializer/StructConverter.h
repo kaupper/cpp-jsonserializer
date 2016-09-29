@@ -1,27 +1,11 @@
-#ifndef TELEGRAM_BOT_JSON_CONVERTER_H_
-#define TELEGRAM_BOT_JSON_CONVERTER_H_
+#ifndef CONVERTER_H_
+#define CONVERTER_H_
 
 #include "Serializable.h"
+#include "TypeCheckTemplates.h"
 
 namespace jsonserializer::structures
 {
-    
-    // check for "primitives"
-    template <typename T> const bool isPrimitive =  std::is_same<T, int>::value || 
-                                                std::is_same<T, float>::value ||
-                                                std::is_same<T, bool>::value ||
-                                                std::is_same<T, long>::value ||
-                                                std::is_same<T, std::string>::value;
-                                                
-    // check for vector
-    template <typename T> struct _isVector { static const bool value = false; };
-    template <typename T, typename Alloc> struct _isVector<std::vector<T,Alloc> > { static const bool value = true; };
-    template <typename T> const bool isVector = _isVector<T>::value;
-    
-    template <typename T> const bool isSomethingElse = !isPrimitive<T> && !isVector<T>;
-   
-    template <typename T> const bool isKnownStructure = false;
-
     class Converter
     {    
     public:
@@ -29,7 +13,7 @@ namespace jsonserializer::structures
         template <typename T> 
         static typename std::enable_if<!isVector<T>, Serializable>::type ToJSON(const T &obj);
               
-        template<typename T> 
+        template <typename T> 
         static typename std::enable_if<isVector<T>, Serializable>::type ToJSON(const T &obj) { 
             Serializable json(Json::arrayValue);
             for(unsigned int i = 0; i < obj.size(); i++) {
@@ -39,12 +23,7 @@ namespace jsonserializer::structures
         }
         
         template<typename T> 
-        static typename std::enable_if<!isVector<T>, Serializable>::type ToJSON(const T *obj) { 
-            return ToJSON(*obj); 
-        }
-        
-        template<typename T>
-        static typename std::enable_if<isVector<T>, Serializable>::type ToJSON(const T *obj) { 
+        static Serializable ToJSON(const T *obj) { 
             return ToJSON(*obj); 
         }
       
@@ -61,9 +40,9 @@ namespace jsonserializer::structures
             }
             return vector;
         }
-        
     };
-
 }
 
-#endif // TELEGRAM_BOT_JSON_CONVERTER_H_
+#include "StructConverterTemplateDefinitions.h"
+
+#endif // CONVERTER_H_

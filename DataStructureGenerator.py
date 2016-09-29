@@ -142,7 +142,6 @@ def generateHeader(file, structures, namespace, deps):
         f.write("}\n")
 
         f.write("namespace jsonserializer::structures\n{\n")
-        f.write("    template <typename T> const bool isKnownStructure = false;\n")
         for struct in structures:
             f.write("    template <> const bool isKnownStructure<%s> = true;\n" % (namespace + "::" + struct["name"]))
         f.write("}\n\n")

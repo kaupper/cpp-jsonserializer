@@ -1,4 +1,5 @@
 #include "StructConverter.h"
+#include "TypeCheckTemplates.h"
 
 using namespace jsonserializer;
 using namespace jsonserializer::structures;
@@ -26,7 +27,7 @@ static typename std::enable_if<isKnownStructure<T>, void>::type SET(Serializable
 
 template <typename T> 
 static typename std::enable_if<isVector<T>, void>::type SET(Serializable &s, const std::string &jsonKey, const T *const obj) {
-    s[jsonKey] = Converter::ToJSON(obj);
+    s[jsonKey] = Converter::ToJSON<T>(obj);
 }
 
 template <typename T> 

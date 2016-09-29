@@ -1,4 +1,5 @@
 #include "StructConverter.h"
+#include "TypeCheckTemplates.h"
 
 using namespace jsonserializer;
 using namespace jsonserializer::structures;
