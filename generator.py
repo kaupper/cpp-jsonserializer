@@ -10,12 +10,9 @@ from jinja2 import Template
 
 
 parser = argparse.ArgumentParser(
-    description='Generate C++ files using a template file and a configuration')
+    description='Generate C++ files using a configuration file')
 parser.add_argument('--cfg', metavar='PATH', type=str, nargs='+',
                     help='path to the configuration files to be used')
-parser.add_argument('--files', metavar='FILES', type=str, nargs='+',
-                    default=['templates/Structures', 'templates/Converter'],
-                    help='one (or more) template files to be processed')
 parser.add_argument('--output', type=str, default='./generated/', nargs='?',
                     help='the directory in which the new files get created')
 
@@ -26,8 +23,11 @@ projectPath = os.path.dirname(sys.argv[0])
 path = os.path.join(projectPath, 'jsonserializer')
 sources = [os.path.join(path, f) for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
 
+path = os.path.join(projectPath, 'templates')
+files = ['Structures', 'Converter']
+files = [os.path.join(path, f) for f in files]
+
 written = 0
-files = [os.path.join(projectPath, f) for f in args.files]
 output = args.output
 headers = []
 
@@ -40,7 +40,7 @@ for f in sources:
     if ext == 'h':
         headers.append(f)
     shutil.copy(f, output)
-    
+
 for cfgFile in args.cfg:
     if not os.path.exists(cfgFile):
         print('Configuration file not found! Skipping.')
@@ -107,4 +107,4 @@ for cfgFile in args.cfg:
 
 print('')
 print('Successfully written ' + str(written) +
-      ' out of ' + str(len(args.files) * 2 * len(args.cfg)) + ' files.')
+      ' out of ' + str(len(files) * 2 * len(args.cfg)) + ' files.')

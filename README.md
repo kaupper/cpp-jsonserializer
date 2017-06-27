@@ -1,10 +1,11 @@
 Welcome to cpp-jsonserializer!
 
-The content of this repository is dedicated to the automatic creation of (de-) serializable structs using [json](https://github.com/nlohmann/json/) and C++ and CMake. The core of the CMake file is the execution of the python script (see CMakeLists.txt for more).
+The content of this repository is dedicated to the automatic creation of (de-) serializable structs using [json](https://github.com/nlohmann/json/), C++, [Jinja2](https://github.com/pallets/jinja) and CMake. 
+The core of the CMake file is the execution of the python script. If you want to get rid of CMake, take the python script and the folders jsonserializer and templates and move them (generator.py depends on these).
+While you can get rid of CMake, be sure you have installed python 3 and Jinja2!
 
-The generation of the structs itself is done by a python script (generator.py) and has following parameters:
+The generation of the structs itself is done by a python script (generator.py) and has the following parameters:
 - `--cfg <configuration_files>`: Specifies the files which describes the structures. For the structure of such a description file see below. The paths are relative to the cmake source directory.
-- `--files <template_files>`: A list of files which describe how the `configuration_files` are translated to C++ source. The generator script uses the [Jinja2](https://github.com/pallets/jinja) templating engine for this purpose. Two default templates (templates/Structures, templates/Converter) are given which should be sufficient for most use cases (in C++). The paths are relative to the cmake source directory.
 - `--output <output_directory>`: Specifies the output directory for generated files. This is relative to you cmakes binary directory.
 
 Example structure for JSON input:
