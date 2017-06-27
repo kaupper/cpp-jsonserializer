@@ -1,4 +1,0 @@
-- rewrite Serializable.h/-.cpp: remove references to logger and replace them with appropriate exceptions
-- rewrite PersistingService.h/-.cpp: remove references to logger and replace them with appropriate exceptions
-- rewrite StructConverter.h: delete all references to telegram
-- rename PersistingException to SerializableException and add members/functionality if needed

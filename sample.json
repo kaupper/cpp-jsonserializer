@@ -1,0 +1,28 @@
+{
+    "name": "Data",
+    "global_includes": ["string"],
+    "local_includes": [],
+    "namespace": "test::test2",
+    "structures": [
+        {
+            "name": "TestStruct",
+            "transient": true,
+            "fields": [
+                {
+                    "name": "stringfield",
+                    "ccname": "StringField",
+                    "jsonname": "string_field",
+                    "type": "std::string",
+                    "required": true
+                },
+                {
+                    "name": "intfield",
+                    "ccname": "IntField",
+                    "jsonname": "int_field",
+                    "type": "int",
+                    "required": false
+                }
+            ]
+        }
+    ]
+}

@@ -1,43 +1,37 @@
 cmake_minimum_required(VERSION 3.6)
 
-if(NOT JSON_SERIALIZER_NAME)
-    set(JSON_SERIALIZER_NAME jsonserializer)
+FUNCTION(PREPEND var prefix)
+   SET(listVar "")
+   FOREACH(f ${ARGN})
+      LIST(APPEND listVar "${prefix}/${f}")
+   ENDFOREACH(f)
+   SET(${var} "${listVar}" PARENT_SCOPE)
+ENDFUNCTION(PREPEND)
+
+project(jsonserializer)
+
+if(NOT JSON_CONFIGURATION_FILES)
+    message(FATAL_ERROR "Please specify configuration files for your templates (JSON_CONFIGURATION_FILES)!")
 endif()
 
-project (${JSON_SERIALIZER_NAME})
-
-# -- setup structure generator 
-# check for generator flags
-if(NOT WITHOUT_STRUCTS)
-    if(NOT JSON_FILE)
-        message(FATAL_ERROR "Please specify a JSON template for your structures (JSON_FILE)!")
-    endif()
-
-    # execute generator at configuration time to provide actual output files to the linker (?)
-    execute_process(
-        COMMAND "python" 
-        "${PROJECT_SOURCE_DIR}/DataStructureGenerator.py" 
-        "--json=${JSON_FILE}" 
-    )
-
-    if(${result})
-        message (FATAL_ERROR "Structure generation failed!")
-    endif()
+if(NOT JSON_OUTPUT_DIR)
+    message(FATAL_ERROR "Please specify a output directory (JSON_OUTPUT_DIR)!")
 endif()
-# -------------
 
+PREPEND(JSON_CONFIGURATION_FILES ${CMAKE_SOURCE_DIR} ${JSON_CONFIGURATION_FILES})
 
-# set include directories
-include_directories(${PROJECT_SOURCE_DIR}/jsonserializer ${PROJECT_SOURCE_DIR})
-file(GLOB_RECURSE GLOB_SOURCES DataStructures.cpp)
-file(GLOB_RECURSE SOURCES *.cpp)
-set(SOURCES ${GLOB_SOURCES} ${SOURCES})
-list(REMOVE_DUPLICATES SOURCES)
+# execute generator at configuration time
+execute_process(
+    COMMAND "python3" 
+    "${PROJECT_SOURCE_DIR}/generator.py" 
+    "--cfg" ${JSON_CONFIGURATION_FILES}
+    "--output" "${CMAKE_BINARY_DIR}/${JSON_OUTPUT_DIR}"
+)
 
-# include jsoncpp
-include("Jsoncpp.cmake")
+set(JSON_INCLUDE_DIR ${CMAKE_BINARY_DIR}/${JSON_OUTPUT_DIR} PARENT_SCOPE)
+file(GLOB JSON_SOURCES ${CMAKE_BINARY_DIR}/${JSON_OUTPUT_DIR}/*.cpp)
+set(JSON_SOURCES ${JSON_SOURCES} PARENT_SCOPE)
 
-# build library
-add_library(${PROJECT_NAME} STATIC ${SOURCES})
-target_include_directories (${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/generated)
-target_link_libraries(${PROJECT_NAME} "jsoncpp")
+if(${result})
+    message (FATAL_ERROR "Structure generation failed!")
+endif()

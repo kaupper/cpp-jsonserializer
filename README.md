@@ -1,82 +1,78 @@
 Welcome to cpp-jsonserializer!
 
-The content of this repository is dedicated to the automatic creation of (de-) serializable structs using jsoncpp and cpp.
+The content of this repository is dedicated to the automatic creation of (de-) serializable structs using [json](https://github.com/nlohmann/json/) and C++ and CMake. The core of the CMake file is the execution of the python script (see CMakeLists.txt for more).
 
 The generation of the structs itself is done by a python script (generator.py) and has following parameters:
-- `--json=<struct_description_file>`: Specifies the file which should be used as template for our structs. For the structure of such a template file see below.
-- `--output=<output_directory>`: Specifies the output directory for generated files. Default is ./generated/.
-- `--header=<common_header>`: Specifies the path and the file name for the header file which should be included in your application. Default is ./generated.h.
+- `--cfg <configuration_files>`: Specifies the files which describes the structures. For the structure of such a description file see below. The paths are relative to the cmake source directory.
+- `--files <template_files>`: A list of files which describe how the `configuration_files` are translated to C++ source. The generator script uses the [Jinja2](https://github.com/pallets/jinja) templating engine for this purpose. Two default templates (templates/Structures, templates/Converter) are given which should be sufficient for most use cases (in C++). The paths are relative to the cmake source directory.
+- `--output <output_directory>`: Specifies the output directory for generated files. This is relative to you cmakes binary directory.
 
 Example structure for JSON input:
 ```json
-[{
-	"fields": [{
-		"cppName": "testField11",
-		"jsonName": "test_field_11",
-		"type": "int",
-		"required": "true"
-	}, {
-		"cppName": "testField12",
-		"jsonName": "test_field_12",
-		"type": "std::string",
-		"required": "true"
-	}],
-	"name": "TestStruct1"
-}]
-```
-
-This JSON file will produce the following header:
-```c++
-#ifndef JSON_SERIALIZER_DATA_STRUCTURES_H_
-#define JSON_SERIALIZER_DATA_STRUCTURES_H_
-
-#include <vector>
-#include <string>
-#include <map>
-
-#include "include/StructConverter.h"
-
-namespace jsonserializer::structures
 {
-    struct TestStruct1;
-
-    struct TestStruct1
-    {
-        TestStruct1();
-        virtual ~TestStruct1();
-        TestStruct1(const TestStruct1 &);
-        TestStruct1 & operator=(const TestStruct1 &);
-        TestStruct1(TestStruct1 &&);
-        TestStruct1 & operator=(TestStruct1 &&);
-        TestStruct1(int testField11, std::string testField12);
-    
-        int *testField11;
-        std::string *testField12;
-    
-        std::map<std::string, void*> map;
-
-        int * GetTestField11();
-        int & GetTestField11Value();
-        std::string * GetTestField12();
-        std::string & GetTestField12Value();
-    };
+    // gets prepended to the template file names
+    // optional, empty by default
+    "name": "Data", 
+    // #include <global_include>
+    // optional, empty by default
+    "global_includes": ["string", "vector"], 
+    // #include "local_include"
+    // optional, empty by default
+    "local_includes": [], 
+    // used as namespace for the generated structures 
+    // optional, 'structures' by default
+    "namespace": "test::namespace",
+    // array of structures
+    "structures": [
+        {
+            // name of the structure
+            "name": "TestStruct",
+            // a transient struct gets flattened when serialized
+            // optional, false by default
+            "transient": true,
+            // array with description of all fields
+            "fields": [
+                {
+                    // name used in the struct
+                    "name": "stringfield",
+                    // used for method naming (cc stands for CamelCase)
+                    // optional, name.title() by default
+                    "ccname": "StringField",
+                    // the name used in an serialized JSON string
+                    // optional, <name> by default
+                    "jsonname": "string_field",
+                    // the C++ type to be used for this field
+                    // optional, int by default
+                    "type": "std::string",
+                    // is this field optional or required?
+                    // optional, false by default
+                    "required": true
+                },
+                {
+                    "name": "intfield",
+                    "ccname": "IntField",
+                    "jsonname": "int_field",
+                    "type": "int",
+                    "required": false
+                }
+            ]
+        }
+    ]
 }
-
-#endif // JSON_SERIALIZER_DATA_STRUCTURES_H_
 ```
+
 
 Structs generated will contain:
 - A simple constructor initializing the members.
 - A destructur which deletes the members if neccesary.
-- Copy and move constructor/assignment operators.
-- Another constructor with all required fields (see JSON).
+- Copy constructor/assignment operator.
+- Another constructor with all required fields (if neccesary).
 
-To be able to have optional fields out members must be pointers, therefore it is possible that they are `NULL`/`nullptr`. 
-If you do not want to do checks for `nullptr` yourself you can use the corresponding `Get<field_name>()`.
-`GetTestField11()` will check if the `testField11` is a nullptr. If so it will create a new pointer (stored with the field name in `map`) and returns that default object. Validation of these objects is up to the user.
-`Get<field_name>Value()` returns the dereferenced object (may segfault!!).
+To be able to have optional fields the members must be pointers, therefore it is possible that they are `NULL`/`nullptr`. 
+If you do not want to do checks for `nullptr` yourself you can use the corresponding `Get<field_name>()` method.
+`GetStringField()` will check if the `stringfield` is `nullptr`. If so it will create a new pointer and returns that default object. Validation of these objects is up to the user.
+`Get<field_name>Value()` returns the dereferenced object (may crash of course).
 
-TODO: Show (de-) serialization with `StructConverter.h`
+Transient structs will be flattened when serialized to JSON.
 
-In order to compile this project you will have to set the include directories to the root folder of this repository!
-You will also have to get [jsoncpp](https://github.com/open-source-parsers/jsoncpp)!
+See the example folder for an usage example!

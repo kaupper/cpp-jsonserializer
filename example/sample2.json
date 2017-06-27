@@ -1,0 +1,37 @@
+{
+    "name": "Example2",
+    "global_includes": [
+        "string"
+    ],
+    "local_includes": ["ExampleStructures.h"],
+    "namespace": "ex2",
+    "structures": [
+        {
+            "name": "ExampleStruct2",
+            "transient": false,
+            "fields": [
+                {
+                    "name": "structfield",
+                    "ccname": "StructField",
+                    "jsonname": "struct_field",
+                    "type": "ex::ExampleStruct1",
+                    "required": true
+                },
+                {
+                    "name": "intfield",
+                    "ccname": "IntField",
+                    "jsonname": "int_field",
+                    "type": "int",
+                    "required": false
+                },
+                {
+                    "name": "boolfield",
+                    "ccname": "BoolField",
+                    "jsonname": "bool_field",
+                    "type": "bool",
+                    "required": false
+                }
+            ]
+        }
+    ]
+}
