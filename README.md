@@ -8,7 +8,7 @@ The generation of the structs itself is done by a python script (generator.py) a
 - `--output <output_directory>`: Specifies the output directory for generated files. This is relative to you cmakes binary directory.
 
 Example structure for JSON input:
-```json
+```javascript
 {
     // gets prepended to the template file names
     // optional, empty by default
