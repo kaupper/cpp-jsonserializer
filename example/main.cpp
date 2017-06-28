@@ -2,9 +2,9 @@
 #include <cassert>
 #include <cmath>
 
-#include "ExampleStructures.h"
-#include "Example2Structures.h"
-#include "StructConverter.h"
+#include "jsonserializer/ExampleStructures.h"
+#include "jsonserializer/Example2Structures.h"
+#include "jsonserializer/StructConverter.h"
 
 using namespace ex;
 using namespace ex2;
@@ -25,14 +25,12 @@ int main()
         {"int_field", 54321},
         {"bool_field", true}
     };
-    ExampleStruct3 ex3 = Converter::FromJSON<ExampleStruct3>(
-        {
-            {"test", 1.234}
-        }
-    );
+    ExampleStruct3 ex3 = Converter::FromJSON<ExampleStruct3>( {
+        {"test", 1.234}
+    }
+                                                            );
     ExampleStruct2 ex2 = Converter::FromJSON<ExampleStruct2>(j);
     ExampleStruct1 *ex1 = ex2.GetStructField();
-
     assert(ex1->GetStringFieldTransValue() == "string test");
     assert(ex1->GetIntFieldTransValue() == 12345);
     assert(ex1->GetBoolFieldTransValue() == false);
@@ -42,25 +40,24 @@ int main()
     assert(ex2.GetIntFieldValue() == 123);
     ex2.SetIntField(54321);
     assert(isNear(ex3.GetTestValue(), 1.234));
-
     assert(j == Converter::ToJSON(ex2));
-
+    
     try {
         // should throw due to the lack of an required field
         Converter::FromJSON<ExampleStruct3>({});
         assert(false);
     } catch (const ConverterException &ex) {
-        
     }
     
     ExampleStruct1 ex4;
+    
     try {
         // should not throw because all other fields are optional
         ex4 = Converter::FromJSON<ExampleStruct1>({{"int_field_trans", 12345}});
     } catch (const ConverterException &ex) {
         assert(false);
     }
-
+    
     assert(ex4.boolfieldtrans == nullptr);
     ex4.SetBoolFieldTrans(true);
     assert(ex4.GetBoolFieldTransValue());

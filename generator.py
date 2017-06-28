@@ -30,17 +30,23 @@ files = [os.path.join(path, f) for f in files]
 written = 0
 headers = []
 
-output = os.path.join(projectPath, 'generated')
+outputHeader = os.path.join(projectPath, 'generated-inc', 'jsonserializer')
+outputSrc = os.path.join(projectPath, 'generated-src')
 
 # prepare file system
-if os.path.isdir(output):
-    shutil.rmtree(output)
-os.mkdir(output)
+if os.path.isdir(outputHeader):
+    shutil.rmtree(outputHeader)
+if os.path.isdir(outputSrc):
+    shutil.rmtree(outputSrc)
+os.makedirs(outputHeader)
+os.makedirs(outputSrc)
 for f in sources:
     _, ext = os.path.splitext(f)
-    if ext == 'h':
+    if ext == '.h':
         headers.append(f)
-    shutil.copy(f, output)
+        shutil.copy(f, outputHeader)
+    else:
+        shutil.copy(f, outputSrc)
 
 
 def checkConfigurationFile(cfg):
@@ -49,7 +55,7 @@ def checkConfigurationFile(cfg):
         print('TypeError: ' + msg)
         print('')
         exit(1)
-        
+
     # name
     if 'name' not in cfg:
         cfg['name'] = ''
@@ -61,7 +67,7 @@ def checkConfigurationFile(cfg):
         cfg['global_includes'] = []
     if not isinstance(cfg['global_includes'], list):
         typeError('"global_includes" has to be an array!')
-        
+
     for inc in cfg['global_includes']:
         if not isinstance(inc, str):
             typeError('entries of "global_includes" have to be strings!')
@@ -162,7 +168,7 @@ for cfgFile in args.cfg:
             continue
 
         headers.append(hFile)
-        name = os.path.join(output,
+        name = os.path.join(outputHeader,
                             prefix + os.path.basename(hFile))
         with open(hFile) as f:
             content = Template(f.read()).render(cfg)
@@ -179,7 +185,7 @@ for cfgFile in args.cfg:
             continue
 
         cfg['header'] = os.path.basename(name)
-        name = os.path.join(output,
+        name = os.path.join(outputSrc,
                             prefix + os.path.basename(cppFile))
         with open(cppFile) as f:
             content = Template(f.read()).render(cfg)

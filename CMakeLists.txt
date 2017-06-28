@@ -14,10 +14,12 @@ execute_process(
     RESULT_VARIABLE result
 )
 
-set(JSON_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/generated PARENT_SCOPE)
-file(GLOB JSON_SOURCES ${PROJECT_SOURCE_DIR}/generated/*.cpp)
-set(JSON_SOURCES ${JSON_SOURCES} PARENT_SCOPE)
-
 if(${result})
     message (FATAL_ERROR "Structure generation failed!")
 endif()
+
+file(GLOB SOURCES ${PROJECT_SOURCE_DIR}/generated-src/*.cpp)
+
+add_library(${PROJECT_NAME} STATIC ${SOURCES})
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/generated-inc)
+target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/generated-inc/jsonserializer)
