@@ -34,7 +34,7 @@ namespace {{namespace}}
 
 
 {% set requiredFields = struct.fields | selectattr("required") | list -%}
-{%- if struct.fields | length !=  requiredFields | length %}
+{%- if struct.fields | length !=  requiredFields | length and requiredFields | length != 0 %}
         {{struct.name}}(
 {%- for field in requiredFields -%}
 {% if field != (requiredFields | last) %}
