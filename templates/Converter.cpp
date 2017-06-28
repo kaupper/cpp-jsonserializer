@@ -14,9 +14,9 @@ namespace jsonserializer
         json j;
 {%- for field in struct.fields %}
 {%- if field.required %}
-        REQ(j, "{{field.jsonname}}", obj.{{field.name}});
+        REQ(j, "{{field.jsonName}}", obj.{{field.name}});
 {%- else %}
-        OPT(j, "{{field.jsonname}}", obj.{{field.name}});
+        OPT(j, "{{field.jsonName}}", obj.{{field.name}});
 {%- endif %}
 {%- endfor %}
         return j;
@@ -27,9 +27,9 @@ namespace jsonserializer
         {{struct.name}} obj;
 {%- for field in struct.fields %}
 {%- if field.required %}
-        REQ(j, "{{field.jsonname}}", obj.{{field.name}});
+        REQ(j, "{{field.jsonName}}", obj.{{field.name}});
 {%- else %}
-        OPT(j, "{{field.jsonname}}", obj.{{field.name}});
+        OPT(j, "{{field.jsonName}}", obj.{{field.name}});
 {%- endif %}
 {%- endfor %}
         return obj;

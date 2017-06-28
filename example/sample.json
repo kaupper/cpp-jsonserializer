@@ -10,39 +10,38 @@
             "fields": [
                 {
                     "name": "stringfieldtrans",
-                    "ccname": "StringFieldTrans",
-                    "jsonname": "string_field_trans",
+                    "ccName": "StringFieldTrans",
+                    "jsonName": "string_field_trans",
                     "type": "std::string",
                     "required": false
                 },
                 {
                     "name": "intfieldtrans",
-                    "ccname": "IntFieldTrans",
-                    "jsonname": "int_field_trans",
+                    "ccName": "IntFieldTrans",
+                    "jsonName": "int_field_trans",
                     "type": "int",
                     "required": true
                 },
                 {
                     "name": "boolfieldtrans",
-                    "ccname": "BoolFieldTrans",
-                    "jsonname": "bool_field_trans",
+                    "ccName": "BoolFieldTrans",
+                    "jsonName": "bool_field_trans",
                     "type": "bool",
                     "required": false
                 }
             ]
-        },
-{
-    "name": "ExampleStruct3",
-    "transient": false,
-    "fields": [
-        {
-            "name": "test",
-            "ccname": "Test",
-            "jsonname": "test",
-            "type": "double",
-            "required": true
+        }, {
+            "name": "ExampleStruct3",
+            "transient": false,
+            "fields": [
+                {
+                    "name": "test",
+                    "ccName": "Test",
+                    "jsonName": "test",
+                    "type": "double",
+                    "required": true
+                }
+            ]
         }
-    ]
-}
     ]
 }

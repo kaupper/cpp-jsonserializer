@@ -59,8 +59,8 @@ namespace {{namespace}}
 {%- endif %}
 
 {% for field in struct.fields %}
-        {{field.type}} *Get{{field.ccname}}();
-        {{field.type}} &Get{{field.ccname}}Value() const;
+        {{field.type}} *Get{{field.ccName}}();
+        {{field.type}} &Get{{field.ccName}}Value() const;
 {%- endfor %}
     };
 {%- endfor %}

@@ -11,23 +11,17 @@
             "transient": false,
             "fields": [
                 {
-                    "name": "structfield",
-                    "ccname": "StructField",
-                    "jsonname": "struct_field",
+                    "name": "structField",
                     "type": "ex::ExampleStruct1",
                     "required": true
                 },
                 {
-                    "name": "intfield",
-                    "ccname": "IntField",
-                    "jsonname": "int_field",
-                    "type": "int",
-                    "required": false
+                    "name": "intField"
                 },
                 {
                     "name": "boolfield",
-                    "ccname": "BoolField",
-                    "jsonname": "bool_field",
+                    "ccName": "BoolField",
+                    "jsonName": "bool_field",
                     "type": "bool",
                     "required": false
                 }

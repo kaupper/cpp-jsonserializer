@@ -26,6 +26,7 @@ execute_process(
     "${PROJECT_SOURCE_DIR}/generator.py" 
     "--cfg" ${JSON_CONFIGURATION_FILES}
     "--output" "${CMAKE_BINARY_DIR}/${JSON_OUTPUT_DIR}"
+    RESULT_VARIABLE result
 )
 
 set(JSON_INCLUDE_DIR ${CMAKE_BINARY_DIR}/${JSON_OUTPUT_DIR} PARENT_SCOPE)

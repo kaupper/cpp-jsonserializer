@@ -24,24 +24,28 @@ Example structure for JSON input:
     // optional, 'structures' by default
     "namespace": "test::namespace",
     // array of structures
+    // optional, [] by default
     "structures": [
         {
             // name of the structure
+            // required!
             "name": "TestStruct",
             // a transient struct gets flattened when serialized
             // optional, false by default
             "transient": true,
             // array with description of all fields
+            // optional, [] by default
             "fields": [
                 {
                     // name used in the struct
-                    "name": "stringfield",
+                    // required!
+                    "name": "stringField",
                     // used for method naming (cc stands for CamelCase)
-                    // optional, name.title() by default
-                    "ccname": "StringField",
+                    // optional, <name> with first capital letter by default
+                    "ccName": "StringField",
                     // the name used in an serialized JSON string
-                    // optional, <name> by default
-                    "jsonname": "string_field",
+                    // optional, snake case of <ccname> by default
+                    "jsonName": "string_field",
                     // the C++ type to be used for this field
                     // optional, int by default
                     "type": "std::string",

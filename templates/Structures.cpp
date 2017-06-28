@@ -83,7 +83,7 @@ static {{struct.name}} &copy({{struct.name}} &lhs, const {{struct.name}} &rhs)
 {%- endif %}
 
 {% for field in struct.fields -%}
-{{field.type}} *{{struct.name}}::Get{{field.ccname}}()
+{{field.type}} *{{struct.name}}::Get{{field.ccName}}()
 {
     if ({{field.name}} == nullptr) {
         {{field.name}} = new {{field.type}};
@@ -91,7 +91,7 @@ static {{struct.name}} &copy({{struct.name}} &lhs, const {{struct.name}} &rhs)
     return {{field.name}}; 
 }
 
-{{field.type}} &{{struct.name}}::Get{{field.ccname}}Value() const
+{{field.type}} &{{struct.name}}::Get{{field.ccName}}Value() const
 {
     return *{{field.name}}; 
 }
