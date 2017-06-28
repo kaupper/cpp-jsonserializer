@@ -27,20 +27,25 @@ template <> double fromString(const std::string &string)
 
 template <> std::string fromString(const std::string &string)
 {
-    return string.substr(1, string.size() - 2);
+    if (!string.empty() && string.front() == '"' && string.back() == '"') {
+        return string.substr(1, string.size() - 2);
+    } else {
+        return string;
+    }
 }
 
 template <> bool fromString(const std::string &string)
 {
     std::string tmp;
-    std::transform(string.cbegin(), string.cend(), std::back_inserter(tmp), ::tolower);
+    std::transform(string.cbegin(), string.cend(), std::back_inserter(tmp),
+                   ::tolower);
     return (tmp == "true");
 }
 
 
 // create primitives
 template <typename T>
-static typename std::enable_if<isPrimitive<T>, T>::type 
+static typename std::enable_if<isPrimitive<T>, T>::type
 CREATE(const json &value)
 {
     return fromString<T>(value.dump());
@@ -48,7 +53,7 @@ CREATE(const json &value)
 
 // create instance of generated data structure
 template <typename T>
-static typename std::enable_if<isKnownStructure<T>, T>::type 
+static typename std::enable_if<isKnownStructure<T>, T>::type
 CREATE(const json &value)
 {
     return Converter::FromJSON<T>(value);
@@ -56,7 +61,7 @@ CREATE(const json &value)
 
 // we may have a vector as type as well (so, create it)
 template <typename T>
-static typename std::enable_if<isVector<T>, T>::type 
+static typename std::enable_if<isVector<T>, T>::type
 CREATE(const json &value)
 {
     T obj;
@@ -70,7 +75,7 @@ CREATE(const json &value)
 
 // create pointers from objects and set them
 template <typename T>
-static void 
+static void
 SET(const json &value, T *&obj)
 {
     obj = new T(CREATE<T>(value));
@@ -78,19 +83,19 @@ SET(const json &value, T *&obj)
 
 // required fields
 template <typename T>
-static void 
+static void
 _REQ(const json &j, const std::string &jsonKey, T *&obj)
 {
     if (j.find(jsonKey) == j.end()) {
         throw ConverterException("Required argument \"" + jsonKey +
-                                    "\" is missing!");
+                                 "\" is missing!");
     }
     
     SET(j[jsonKey], obj);
 }
 
 template <typename T>
-static typename std::enable_if<isKnownStructure<T>, void>::type 
+static typename std::enable_if<isKnownStructure<T>, void>::type
 REQ(const json &s, const std::string &jsonKey, T *&obj)
 {
     if (T::__transient) {
@@ -101,7 +106,7 @@ REQ(const json &s, const std::string &jsonKey, T *&obj)
 }
 
 template <typename T>
-static typename std::enable_if<!isKnownStructure<T>, void>::type 
+static typename std::enable_if < !isKnownStructure<T>, void >::type
 REQ(const json &s, const std::string &jsonKey, T *&obj)
 {
     _REQ(s, jsonKey, obj);
@@ -109,16 +114,16 @@ REQ(const json &s, const std::string &jsonKey, T *&obj)
 
 // optional fields
 template <typename T>
-static void 
+static void
 _OPT(const json &j, const std::string &jsonKey, T *&obj)
 {
-    if(j.find(jsonKey) != j.end()) {
+    if (j.find(jsonKey) != j.end()) {
         SET(j[jsonKey], obj);
     }
 }
 
 template <typename T>
-static typename std::enable_if<isKnownStructure<T>, void>::type 
+static typename std::enable_if<isKnownStructure<T>, void>::type
 OPT(const json &s, const std::string &jsonKey, T *&obj)
 {
     if (T::__transient) {
@@ -133,7 +138,7 @@ OPT(const json &s, const std::string &jsonKey, T *&obj)
 }
 
 template <typename T>
-static typename std::enable_if<!isKnownStructure<T>, void>::type 
+static typename std::enable_if < !isKnownStructure<T>, void >::type
 OPT(const json &s, const std::string &jsonKey, T *&obj)
 {
     _OPT(s, jsonKey, obj);
