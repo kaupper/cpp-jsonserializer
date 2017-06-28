@@ -72,11 +72,13 @@ Structs generated will contain:
 - A destructur which deletes the members if neccesary.
 - Copy constructor/assignment operator.
 - Another constructor with all required fields (if neccesary).
+- Getter and setters for all fields as described below
 
 To be able to have optional fields the members must be pointers, therefore it is possible that they are `NULL`/`nullptr`. 
 If you do not want to do checks for `nullptr` yourself you can use the corresponding `Get<field_name>()` method.
 `GetStringField()` will check if the `stringfield` is `nullptr`. If so it will create a new pointer and returns that default object. Validation of these objects is up to the user.
 `Get<field_name>Value()` returns the dereferenced object (may crash of course).
+`Set<field_name>(const <field_type> &)` creates a new pointer and sets it to the given value. It also takes care of an already existing pointer.
 
 Transient structs will be flattened when serialized to JSON.
 

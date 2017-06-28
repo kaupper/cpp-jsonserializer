@@ -38,6 +38,9 @@ int main()
     assert(ex1->GetBoolFieldTransValue() == false);
     assert(ex2.GetBoolFieldValue() == true);
     assert(ex2.GetIntFieldValue() == 54321);
+    ex2.SetIntField(123);
+    assert(ex2.GetIntFieldValue() == 123);
+    ex2.SetIntField(54321);
     assert(isNear(ex3.GetTestValue(), 1.234));
 
     assert(j == Converter::ToJSON(ex2));
@@ -50,11 +53,16 @@ int main()
         
     }
     
+    ExampleStruct1 ex4;
     try {
         // should not throw because all other fields are optional
-        Converter::FromJSON<ExampleStruct1>({{"int_field_trans", 12345}});
+        ex4 = Converter::FromJSON<ExampleStruct1>({{"int_field_trans", 12345}});
     } catch (const ConverterException &ex) {
         assert(false);
     }
+
+    assert(ex4.boolfieldtrans == nullptr);
+    ex4.SetBoolFieldTrans(true);
+    assert(ex4.GetBoolFieldTransValue());
     return 0;
 }

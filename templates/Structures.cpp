@@ -96,5 +96,14 @@ static {{struct.name}} &copy({{struct.name}} &lhs, const {{struct.name}} &rhs)
     return *{{field.name}}; 
 }
 
+void {{struct.name}}::Set{{field.ccName}}(const {{field.type}} &new{{field.name}})
+{
+    if({{field.name}} != nullptr) {
+        delete {{field.name}};
+    }
+    {{field.name}} = new {{field.type}}(new{{field.name}});
+}
+
+
 {% endfor %}
 {% endfor %}

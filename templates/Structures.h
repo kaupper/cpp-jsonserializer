@@ -61,6 +61,7 @@ namespace {{namespace}}
 {% for field in struct.fields %}
         {{field.type}} *Get{{field.ccName}}();
         {{field.type}} &Get{{field.ccName}}Value() const;
+        void Set{{field.ccName}}(const {{field.type}} &);
 {%- endfor %}
     };
 {%- endfor %}
