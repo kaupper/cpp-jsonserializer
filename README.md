@@ -6,7 +6,6 @@ While you can get rid of CMake, be sure you have installed python 3 and Jinja2!
 
 The generation of the structs itself is done by a python script (generator.py) and has the following parameters:
 - `--cfg <configuration_files>`: Specifies the files which describes the structures. For the structure of such a description file see below. The paths are relative to the cmake source directory.
-- `--output <output_directory>`: Specifies the output directory for generated files. This is relative to you cmakes binary directory.
 
 Example structure for JSON input:
 ```javascript

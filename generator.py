@@ -14,8 +14,6 @@ parser = argparse.ArgumentParser(
     description='Generate C++ files using a configuration file')
 parser.add_argument('--cfg', metavar='PATH', type=str, nargs='+',
                     help='path to the configuration files to be used')
-parser.add_argument('--output', type=str, default='./generated/', nargs='?',
-                    help='the directory in which the new files get created')
 
 
 args = parser.parse_args()
@@ -30,8 +28,9 @@ files = ['Structures', 'Converter']
 files = [os.path.join(path, f) for f in files]
 
 written = 0
-output = args.output
 headers = []
+
+output = os.path.join(projectPath, 'generated')
 
 # prepare file system
 if os.path.isdir(output):

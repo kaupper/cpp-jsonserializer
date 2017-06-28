@@ -25,7 +25,6 @@ execute_process(
     COMMAND "python3" 
     "${PROJECT_SOURCE_DIR}/generator.py" 
     "--cfg" ${JSON_CONFIGURATION_FILES}
-    "--output" "${CMAKE_BINARY_DIR}/${JSON_OUTPUT_DIR}"
     RESULT_VARIABLE result
 )
 
