@@ -43,7 +43,7 @@ os.makedirs(outputSrc)
 for f in sources:
     _, ext = os.path.splitext(f)
     if ext == '.h':
-        headers.append(f)
+        headers.append(os.path.basename(f))
         shutil.copy(f, outputHeader)
     else:
         shutil.copy(f, outputSrc)
@@ -167,9 +167,10 @@ for cfgFile in args.cfg:
             print('Template header file "' + hFile + '" not found! Skipping.')
             continue
 
-        headers.append(hFile)
+        headers.append(os.path.basename(hFile))
         name = os.path.join(outputHeader,
                             prefix + os.path.basename(hFile))
+        headers.append(os.path.basename(name))
         with open(hFile) as f:
             content = Template(f.read()).render(cfg)
 
@@ -196,7 +197,11 @@ for cfgFile in args.cfg:
         print('Wrote source file "' + name + '"')
         written = written + 1
 
+with open(os.path.join(outputHeader, 'Generated.h'), 'w') as f:
+    for header in headers:
+        f.write('#include "jsonserializer/' + header + '"\n')
 
+print('Wrote "Generated.h"')
 print('')
 print('Successfully written ' + str(written) +
       ' out of ' + str(len(files) * 2 * len(args.cfg)) + ' files.')
