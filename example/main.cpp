@@ -2,9 +2,7 @@
 #include <cassert>
 #include <cmath>
 
-#include "jsonserializer/ExampleStructures.h"
-#include "jsonserializer/Example2Structures.h"
-#include "jsonserializer/StructConverter.h"
+#include "jsonserializer/Generated.h"
 
 using namespace ex;
 using namespace ex2;
@@ -25,7 +23,7 @@ int main()
         {"int_field", 54321},
         {"bool_field", true}
     };
-    ExampleStruct3 ex3 = Converter::FromJSON<ExampleStruct3>( {
+    ExampleStruct3 ex3 = Converter::FromJSON<ExampleStruct3>({
         {"test", 1.234}
     }
                                                             );

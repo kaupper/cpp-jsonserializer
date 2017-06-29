@@ -167,7 +167,6 @@ for cfgFile in args.cfg:
             print('Template header file "' + hFile + '" not found! Skipping.')
             continue
 
-        headers.append(os.path.basename(hFile))
         name = os.path.join(outputHeader,
                             prefix + os.path.basename(hFile))
         headers.append(os.path.basename(name))

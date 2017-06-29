@@ -27,11 +27,7 @@ template <> double fromString(const std::string &string)
 
 template <> std::string fromString(const std::string &string)
 {
-    if (!string.empty() && string.front() == '"' && string.back() == '"') {
-        return string.substr(1, string.size() - 2);
-    } else {
-        return string;
-    }
+    return string;
 }
 
 template <> bool fromString(const std::string &string)
@@ -48,6 +44,10 @@ template <typename T>
 static typename std::enable_if<isPrimitive<T>, T>::type
 CREATE(const json &value)
 {
+    if (value.type() == json::value_t::string) {
+        return fromString<T>(value.get<std::string>());
+    }
+    
     return fromString<T>(value.dump());
 }
 
@@ -127,11 +127,7 @@ static typename std::enable_if<isKnownStructure<T>, void>::type
 OPT(const json &s, const std::string &jsonKey, T *&obj)
 {
     if (T::__transient) {
-        try {
-            obj = new T(Converter::FromJSON<T>(s));
-        } catch (...) {
-            // nothing to be done
-        }
+        obj = new T(Converter::FromJSON<T>(s));
     } else {
         _OPT(s, jsonKey, obj);
     }
@@ -143,4 +139,3 @@ OPT(const json &s, const std::string &jsonKey, T *&obj)
 {
     _OPT(s, jsonKey, obj);
 }
-
