@@ -9,16 +9,6 @@ template <typename T> T *deepCopyPointer(T *pointer) {
     return new T(*pointer);
 }
 
-{% for struct in structures %}
-static {{struct.name}} &copy({{struct.name}} &lhs, const {{struct.name}} &rhs)
-{
-    {%- for field in struct.fields %}
-    lhs.{{field.name}} = deepCopyPointer(rhs.{{field.name}});
-    {%- endfor %}
-    return lhs;
-}
-{%- endfor %}
-
 
 {% for struct in structures -%}
 {{struct.name}}::{{struct.name}}()
@@ -37,12 +27,17 @@ static {{struct.name}} &copy({{struct.name}} &lhs, const {{struct.name}} &rhs)
 
 {{struct.name}}::{{struct.name}}(const {{struct.name}} &src) : {{struct.name}}()
 {
-    copy(*this, src);
+    {%- for field in struct.fields %}
+    {{field.name}} = deepCopyPointer(src.{{field.name}});
+    {%- endfor %}
 }
 
 {{struct.name}} &{{struct.name}}::operator =(const {{struct.name}} &src)
 {
-    return copy(*this, src);
+    {%- for field in struct.fields %}
+    {{field.name}} = deepCopyPointer(src.{{field.name}});
+    {%- endfor %}
+    return *this;
 }
 
 {% set requiredFields = struct.fields | selectattr("required") | list -%}
@@ -83,7 +78,7 @@ static {{struct.name}} &copy({{struct.name}} &lhs, const {{struct.name}} &rhs)
 {%- endif %}
 
 {% for field in struct.fields -%}
-{{field.type}} *{{struct.name}}::Get{{field.ccName}}()
+{{field.type}} *{{struct.name}}::Get{{field.ccName}}() const
 {
     if ({{field.name}} == nullptr) {
         {{field.name}} = new {{field.type}};

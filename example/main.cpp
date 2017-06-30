@@ -23,12 +23,12 @@ int main()
         {"int_field", 54321},
         {"bool_field", true}
     };
-    ExampleStruct3 ex3 = Converter::FromJSON<ExampleStruct3>({
+    const ExampleStruct3 ex3 = Converter::FromJSON<ExampleStruct3>({
         {"test", 1.234}
     }
                                                             );
     ExampleStruct2 ex2 = Converter::FromJSON<ExampleStruct2>(j);
-    ExampleStruct1 *ex1 = ex2.GetStructField();
+    const ExampleStruct1 *ex1 = ex2.GetStructField();
     assert(ex1->GetStringFieldTransValue() == "string test");
     assert(ex1->GetIntFieldTransValue() == 12345);
     assert(ex1->GetBoolFieldTransValue() == false);
@@ -56,7 +56,6 @@ int main()
         assert(false);
     }
     
-    assert(ex4.boolfieldtrans == nullptr);
     ex4.SetBoolFieldTrans(true);
     assert(ex4.GetBoolFieldTransValue());
     return 0;

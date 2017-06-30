@@ -8,6 +8,7 @@
 {% for inc in local_includes -%}
 #include "{{inc}}"
 {% endfor %}
+#include "StructConverter.h"
 #include "TypeCheckTemplates.h"
 
 
@@ -19,13 +20,17 @@ namespace {{namespace}}
 
 {% for struct in structures %}
 
-    struct {{struct.name}}
+    class {{struct.name}}
     {
-        static const bool __transient = {{struct.transient | lower}};
+        friend class jsonserializer::Converter;
+        
 {% for field in struct.fields %}
-        {{field.type}} *{{field.name}} = nullptr;
+        mutable {{field.type}} *{{field.name}} = nullptr;
 {%- endfor %}
 
+    public:
+        static const bool __transient = {{struct.transient | lower}};
+        
         {{struct.name}}();
         ~{{struct.name}}();
 
@@ -59,7 +64,7 @@ namespace {{namespace}}
 {%- endif %}
 
 {% for field in struct.fields %}
-        {{field.type}} *Get{{field.ccName}}();
+        {{field.type}} *Get{{field.ccName}}() const;
         {{field.type}} &Get{{field.ccName}}Value() const;
         void Set{{field.ccName}}(const {{field.type}} &);
 {%- endfor %}

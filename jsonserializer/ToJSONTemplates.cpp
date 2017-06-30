@@ -39,7 +39,7 @@ SET(json &s, const std::string &jsonKey, const T *const obj)
 
 template <typename T>
 static void
-REQ(json &s, const std::string &jsonKey, const T *const obj)
+REQ(const T *const obj, const std::string &jsonKey, json &s)
 {
     if (obj == nullptr) {
         throw ConverterException("Required field \"" + jsonKey + "\" is missing!");
@@ -50,7 +50,7 @@ REQ(json &s, const std::string &jsonKey, const T *const obj)
 
 template <typename T>
 static void
-OPT(json &s, const std::string &jsonKey, const T *const obj)
+OPT(const T *const obj, const std::string &jsonKey, json &s)
 {
     if (obj != nullptr) {
         SET(s, jsonKey, obj);
