@@ -55,7 +55,8 @@ int main()
     } catch (const ConverterException &ex) {
         assert(false);
     }
-    
+
+    assert(not ex4.HasBoolFieldTrans());
     ex4.SetBoolFieldTrans(true);
     assert(ex4.GetBoolFieldTransValue());
     return 0;

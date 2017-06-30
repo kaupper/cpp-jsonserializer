@@ -99,6 +99,11 @@ void {{struct.name}}::Set{{field.ccName}}(const {{field.type}} &new{{field.name}
     {{field.name}} = new {{field.type}}(new{{field.name}});
 }
 
+bool {{struct.name}}::Has{{field.ccName}}() const
+{
+    return {{field.name}} != nullptr;
+}
+
 
 {% endfor %}
 {% endfor %}

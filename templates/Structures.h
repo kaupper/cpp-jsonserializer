@@ -67,6 +67,7 @@ namespace {{namespace}}
         {{field.type}} *Get{{field.ccName}}() const;
         {{field.type}} &Get{{field.ccName}}Value() const;
         void Set{{field.ccName}}(const {{field.type}} &);
+        bool Has{{field.ccName}}() const;
 {%- endfor %}
     };
 {%- endfor %}
